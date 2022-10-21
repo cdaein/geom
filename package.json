@@ -31,5 +31,13 @@
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cdaein/geom.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cdaein/geom/issues"
+  },
+  "homepage": "https://github.com/cdaein/geom#readme"
 }

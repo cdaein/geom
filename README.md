@@ -7,3 +7,7 @@
   - https://github.com/hustcc/jest-canvas-mock
   - https://github.com/americanexpress/jest-image-snapshot/
   - https://yonatankra.com/how-to-test-html5-canvas-with-jest/
+
+## License
+
+MIT
