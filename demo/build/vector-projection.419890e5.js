@@ -616,7 +616,7 @@ function loop() {
 }
 loop();
 
-},{"../dist/index.js":"7elyk","@daeinc/canvas":"88W4y"}],"7elyk":[function(require,module,exports) {
+},{"../dist/index.js":"7elyk","@daeinc/canvas":"1gUgL"}],"7elyk":[function(require,module,exports) {
 "use strict";
 var __importDefault = this && this.__importDefault || function(mod) {
     return mod && mod.__esModule ? mod : {
@@ -626,125 +626,31 @@ var __importDefault = this && this.__importDefault || function(mod) {
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.combinePath = exports.blendPath = exports.extrudePath = exports.interpolate = exports.interpolateObject = exports.interpolateArray = exports.interpolatePath = exports.createShapeFunc = exports.getPathLength = exports.projectPointOnLine = exports.distSq = exports.dist = exports.reflectPath = exports.reflectPoint = exports.scalePath = exports.scalePoint = void 0;
+exports.combinePath = exports.calcTByLength = exports.scalePath = exports.scalePoint = exports.reflectPath = exports.reflectPoint = exports.projectPointOnLine = exports.interpolate = exports.interpolateObject = exports.interpolateArray = exports.interpolatePath = exports.extrudePath = exports.getPathLength = exports.distSq = exports.dist = exports.createShapeFunc = exports.blendPath = void 0;
 const math_1 = require("@daeinc/math");
-// import { sub, scale, dot, len, normalize } from "gl-vec3";
-const victor_1 = __importDefault(require("victor"));
+const gl_vec2_1 = __importDefault(require("gl-vec2"));
 /**
- * scale a single point
- * @param pt a point [x, y]
- * @param size [width, height] to scale to
- * @returns scaled point [x, y]
- */ const scalePoint = (pt, size)=>{
-    const [x, y] = pt;
-    const [w, h] = size;
-    return [
-        x * w,
-        y * h
-    ];
-};
-exports.scalePoint = scalePoint;
-/**
- * take normalized path data and return [ x, y ] scaled to width and height
- * REVIEW: why did I floor values? to adhere to pixel grid?
- * @param path array of [ x, y ] normalized point pairs
- * @param w width to scale to
- * @param h height to scale to
- * @returns new array of [ x, y ]
- */ const scalePath = (path, size)=>{
-    return path.map((pt)=>(0, exports.scalePoint)(pt, size));
-// return path.map((pt, i) => {
-//   return [Math.floor(pt[0] * w), Math.floor(pt[1] * h)];
-// });
-};
-exports.scalePath = scalePath;
-/**
- * reflect a point on another point or a line
- * @param pt source point to be mirrored
- * @param axis mirror axis. either point (or line)
- * @returns
- */ const reflectPoint = (pt, axis)=>{
-    if (axis[0].constructor === Array) {
-        const vecProj = victor_1.default.fromArray((0, exports.projectPointOnLine)(pt, axis));
-        const vecDist = victor_1.default.fromArray(pt).subtract(vecProj);
-        const vecRefl = vecProj.subtract(vecDist);
-        return vecRefl.toArray();
-    } else return [
-        (0, math_1.reflect)(pt[0], axis[0]),
-        (0, math_1.reflect)(pt[1], axis[1]), 
-    ];
-};
-exports.reflectPoint = reflectPoint;
-/**
- * TODO: implement
- * - mirror path against line
- * TODO: test
- * @param pts data that needs to be mirrored
- * @param axis mirror axis. either point or line
- * @returns
- */ const reflectPath = (pts, axis)=>{
-    if (axis[0].constructor === Array) return pts.map((pt)=>{
-        const vecProj = victor_1.default.fromArray((0, exports.projectPointOnLine)(pt, axis));
-        const vecDist = victor_1.default.fromArray(pt).subtract(vecProj);
-        const vecRefl = vecProj.subtract(vecDist);
-        return vecRefl.toArray();
+ * generates an array of paths (excl. original 2 paths)
+ *
+ * TODO:
+ * - guidePath: input another path to use as shaping path.
+ *   this path should already be resampled so that path points can be used as numBlends,
+ *   or use numBlends param to resample within this function.
+ * @param path1 array of [x, y] to blend from
+ * @param path2 array of [x, y] to blend to
+ * @param numBlends how many blended paths to generate (excl. two original paths)
+ * @param guidePath optional. custom path that blended paths will follow along.
+ * @returns 3d array of paths [number of blends][each blended path][x, y]
+ */ const blendPath = (path1, path2, numBlends, guidePath)=>{
+    return Array(numBlends).fill([]).map((_, i)=>{
+        const t = (i + 1) / (numBlends + 1);
+        return (0, exports.interpolatePath)(path1, path2, t);
     });
-    else return pts.map((pt)=>(0, exports.reflectPoint)(pt, axis));
 };
-exports.reflectPath = reflectPath;
+exports.blendPath = blendPath;
 /**
- * TODO: test
- * @param pt1
- * @param pt2
- * @returns
- */ const dist = (pt1, pt2)=>{
-    return Math.sqrt(Math.pow(pt2[0] - pt1[0], 2) + Math.pow(pt2[1] - pt1[1], 2));
-};
-exports.dist = dist;
-/**
- * TODO: test
- * squared distance. (x^2 + y^2)
- * @param pt1
- * @param pt2
- * @returns
- */ const distSq = (pt1, pt2)=>{
-    return Math.pow(pt2[0] - pt1[0], 2) + Math.pow(pt2[1] - pt1[1], 2);
-};
-exports.distSq = distSq;
-/**
- * project a point on a line using vector.
- * NOTE: implementation is not great as I haven't decided which vector library to use yet.
- * @param pt point
- * @param line line segment
- * @returns point on the line
- */ const projectPointOnLine = (pt, line)=>{
-    const ptVec = new victor_1.default(pt[0] - line[1][0], pt[1] - line[1][1]);
-    const lineVec = new victor_1.default(line[0][0] - line[1][0], line[0][1] - line[1][1]);
-    const prod = ptVec.dot(lineVec);
-    const proj = prod / lineVec.length();
-    const result = lineVec.normalize().multiply(new victor_1.default(proj, proj)) // Victor doesn't have mult(scalar)
-    .add(victor_1.default.fromArray(line[1]));
-    return result.toArray();
-};
-exports.projectPointOnLine = projectPointOnLine;
-/**
- * take an array of points and return total length of path
- * when using g.js: https://g.js.org/ref/pathLength.html
- * @param path array of [ x, y ] points
- * @returns total length of path
- */ const getPathLength = (path)=>{
-    return path.reduce((totalLen, pt, i, arr)=>{
-        if (arr.length < 2) return 0; // handle single point length
-        if (i === arr.length - 1) return totalLen; // skip last one (no i+1 there)
-        return totalLen + Math.sqrt(Math.pow(arr[i + 1][0] - arr[i][0], 2) + Math.pow(arr[i + 1][1] - arr[i][1], 2));
-    }, 0);
-};
-exports.getPathLength = getPathLength;
-/**
- * pts array must be normalized (0..1)
- * the resulting function is transformed to draw from center [0, 0].
- * REVIEW: re-use scalePoint() and scalePath()
- * @param pts normalized array of [x, y]s
+ * the resulting function is transformed to draw from center [0, 0]
+ * @param pts must be a normalized array (0..1) of [x, y]s
  * @param anchor normalized center point [x, y]
  * @returns function to draw shape with given params (x,y,w,h)
  */ const createShapeFunc = (pts, anchor = [
@@ -762,89 +668,41 @@ exports.getPathLength = getPathLength;
 };
 exports.createShapeFunc = createShapeFunc;
 /**
- * mix/lerp 2d array. usually used for path data of [x, y]
- * pathStart and pathTarget must be the same length
- * @param pathStart array of [x, y] to start
- * @param pathTarget array of [x, y] to target
- * @param t 0..1
- * @returns 2d array
- */ const interpolatePath = (pathStart, pathTarget, t)=>{
-    if (pathStart.length === 0 || pathTarget.length === 0) throw new Error("interpolatePath(): path cannot be empty");
-    if (pathStart.length !== pathTarget.length) throw new Error("interpolatePath(): length must be same");
-    return Array(pathStart.length).fill([]).map((_, i)=>{
-        return [
-            (0, math_1.mix)(pathStart[i][0], pathTarget[i][0], t),
-            (0, math_1.mix)(pathStart[i][1], pathTarget[i][1], t), 
-        ];
-    });
-};
-exports.interpolatePath = interpolatePath;
-/**
- * interpolates between two 1d array of any size. for now, numbers only.
- * TODO: expand to take object, nested aray/ojbects. recursive.
- * @param arrStart array to start from
- * @param arrTarget array to interpolate to
- * @param t 0..1
- * @returns 1d array
- */ const interpolateArray = (arrStart, arrTarget, t)=>{
-    if (arrStart.length === 0 || arrTarget.length === 0) throw new Error("interpolateArray(): arrays cannot be empty");
-    if (arrStart.length !== arrTarget.length) throw new Error("interpolateArray(): length must be same");
-    return Array(arrStart.length).fill(0).map((_, i)=>{
-        return (0, math_1.mix)(arrStart[i], arrTarget[i], t);
-    });
-};
-exports.interpolateArray = interpolateArray;
-/**
- * interpolate object with {string:number}. ie. {x:10}.
- * both objects must have same keys.
- * @param objStart object to start from
- * @param objTarget object to interpolate to
- * @param t 0..1
- * @returns interpolated object
- */ const interpolateObject = (objStart, objTarget, t)=>{
-    const obj = {};
-    if (Object.keys(objStart).length !== Object.keys(objTarget).length) throw new Error("interpolateObject(): objects must have same keys");
-    for(const key in objStart){
-        if (!(key in objTarget)) throw new Error("interpolateObject(): objects must have same keys");
-        obj[key] = (0, math_1.mix)(objStart[key], objTarget[key], t);
-    }
-    return obj;
-};
-exports.interpolateObject = interpolateObject;
-/**
- * REVIEW:
- * - currently, string or boolean uses start value. (should it be t=0.5?)
- * - should i place it in utils/math?
- * TODO:
- * - Typescript-wise, this is a mess now.
- * - generic type: is this working? i only need to test a few types.
- * - first if type checking is not working for array===object
- * - every if condition is redundant to check start AND target
- * @param start
- * @param target
- * @param t
+ * calculate distance between two point[]s
+ * @param pt1
+ * @param pt2
  * @returns
- */ const interpolate = (// start: number | number[] | Pts | GenericObject,
-// target: number | number[] | Pts | GenericObject,
-start, target, t)=>{
-    if (typeof start !== typeof target) throw new Error("interpolate(): both start and target args must be of same type");
-    if (typeof start === "number" && typeof target === "number") return (0, math_1.mix)(start, target, t);
-    else if (Array.isArray(start) && Array.isArray(target)) {
-        if (start[0].constructor === Array && target[0].constructor === Array) // 2d array
-        return (0, exports.interpolatePath)(start, target, t);
-        else // 1d array
-        return (0, exports.interpolateArray)(start, target, t);
-    // } else if (start.constructor === Object) {
-    } else if (typeof start === "object" && start !== null && typeof target === "object" && target !== null) // object
-    return (0, exports.interpolateObject)(start, target, t);
-    else // string or boolean
-    return start;
+ */ const dist = (pt1, pt2)=>{
+    return Math.sqrt(Math.pow(pt2[0] - pt1[0], 2) + Math.pow(pt2[1] - pt1[1], 2));
 };
-exports.interpolate = interpolate;
+exports.dist = dist;
+/**
+ * squared distance (x^2 + y^2) between two point[]s
+ * @param pt1
+ * @param pt2
+ * @returns
+ */ const distSq = (pt1, pt2)=>{
+    return Math.pow(pt2[0] - pt1[0], 2) + Math.pow(pt2[1] - pt1[1], 2);
+};
+exports.distSq = distSq;
+/**
+ * take an array of points and return total length of path
+ * @param path array of [ x, y ] points
+ * @returns total length of path
+ */ const getPathLength = (path)=>{
+    return path.reduce((totalLen, pt, i, arr)=>{
+        if (arr.length < 2) return 0; // handle single point length
+        if (i === arr.length - 1) return totalLen; // skip last one (no i+1 there)
+        return totalLen + Math.sqrt(Math.pow(arr[i + 1][0] - arr[i][0], 2) + Math.pow(arr[i + 1][1] - arr[i][1], 2));
+    }, 0);
+};
+exports.getPathLength = getPathLength;
 /**
  * extrude path in 2d space
- * TODO: instead of preventing numPoints<path length, continue to extrude. use modulo.
- * TODO: custom shapeFunc
+ *
+ * TODO:
+ * - instead of preventing numPoints<path length, continue to extrude. use modulo.
+ * - add custom shapeFunc
  * @param path array of [ x, y ]
  * @param numPointsToExtrude how many points to use for extruding (mirroring). useful when extruding same path again.
  * @param offset [ x, y ] how much +/- in each dimension
@@ -888,24 +746,159 @@ exports.interpolate = interpolate;
 };
 exports.extrudePath = extrudePath;
 /**
- * generates an array of paths (excl. original 2 paths)
- * TODO:
- * - guidePath: input another path to use as shaping path.
- *   this path should already be resampled so that path points can be used as numBlends,
- *   or use numBlends param to resample within this function.
- * 22.07.29
- * @param path1 array of [x, y] to blend from
- * @param path2 array of [x, y] to blend to
- * @param numBlends how many blended paths to generate (excl. two original paths)
- * @param guidePath optional. custom path that blended paths will follow along.
- * @returns 3d array of paths [number of blends][each blended path][x, y]
- */ const blendPath = (path1, path2, numBlends, guidePath)=>{
-    return Array(numBlends).fill([]).map((_, i)=>{
-        const t = (i + 1) / (numBlends + 1);
-        return (0, exports.interpolatePath)(path1, path2, t);
+ * mix/lerp 2d number array. usually used for path data of [x, y]
+ * @param pathStart array of [x, y] to start
+ * @param pathTarget array of [x, y] to target
+ * @param t 0..1
+ * @returns 2d array
+ */ const interpolatePath = (pathStart, pathTarget, t)=>{
+    if (pathStart.length === 0 || pathTarget.length === 0) throw new Error("interpolatePath(): path cannot be empty");
+    if (pathStart.length !== pathTarget.length) throw new Error("interpolatePath(): length must be same");
+    return Array(pathStart.length).fill([]).map((_, i)=>{
+        return [
+            (0, math_1.mix)(pathStart[i][0], pathTarget[i][0], t),
+            (0, math_1.mix)(pathStart[i][1], pathTarget[i][1], t), 
+        ];
     });
 };
-exports.blendPath = blendPath;
+exports.interpolatePath = interpolatePath;
+/**
+ * interpolates between two 1d array of any size. for now, numbers only.
+ *
+ * TODO: expand to take object, nested aray/ojbects. recursive.
+ * @param arrStart array to start from
+ * @param arrTarget array to interpolate to
+ * @param t 0..1
+ * @returns 1d array
+ */ const interpolateArray = (arrStart, arrTarget, t)=>{
+    if (arrStart.length === 0 || arrTarget.length === 0) throw new Error("interpolateArray(): arrays cannot be empty");
+    if (arrStart.length !== arrTarget.length) throw new Error("interpolateArray(): length must be same");
+    return Array(arrStart.length).fill(0).map((_, i)=>{
+        return (0, math_1.mix)(arrStart[i], arrTarget[i], t);
+    });
+};
+exports.interpolateArray = interpolateArray;
+/**
+ * interpolate object with {string:number}. ie. {x:10}.
+ * both objects must have same keys.
+ * @param objStart object to start from
+ * @param objTarget object to interpolate to
+ * @param t 0..1
+ * @returns interpolated object
+ */ const interpolateObject = (objStart, objTarget, t)=>{
+    const obj = {};
+    if (Object.keys(objStart).length !== Object.keys(objTarget).length) throw new Error("interpolateObject(): objects must have same keys");
+    for(const key in objStart){
+        if (!(key in objTarget)) throw new Error("interpolateObject(): objects must have same keys");
+        obj[key] = (0, math_1.mix)(objStart[key], objTarget[key], t);
+    }
+    return obj;
+};
+exports.interpolateObject = interpolateObject;
+/**
+ * interpolate number, number[], number[][] or generic object
+ * TODO:
+ * - currently, string or boolean uses start value. (should it be t=0.5?)
+ * - review TS implementation
+ * - every if condition is redundant to check start AND target
+ * @param start
+ * @param target
+ * @param t
+ * @returns
+ */ const interpolate = (// start: number | number[] | Pts | GenericObject,
+// target: number | number[] | Pts | GenericObject,
+start, target, t)=>{
+    if (typeof start !== typeof target) throw new Error("interpolate(): both start and target args must be of same type");
+    if (typeof start === "number" && typeof target === "number") return (0, math_1.mix)(start, target, t);
+    else if (Array.isArray(start) && Array.isArray(target)) {
+        if (start[0].constructor === Array && target[0].constructor === Array) // 2d array
+        return (0, exports.interpolatePath)(start, target, t);
+        else // 1d array
+        return (0, exports.interpolateArray)(start, target, t);
+    // } else if (start.constructor === Object) {
+    } else if (typeof start === "object" && start !== null && typeof target === "object" && target !== null) // object
+    return (0, exports.interpolateObject)(start, target, t);
+    else // string or boolean
+    return start;
+};
+exports.interpolate = interpolate;
+/**
+ * project a point on a line using vector.
+ * @param pt point
+ * @param line line segment
+ * @returns point on the line
+ */ const projectPointOnLine = (pt, line)=>{
+    const ptVec = gl_vec2_1.default.fromValues(pt[0] - line[1][0], pt[1] - line[1][1]);
+    const lineVec = gl_vec2_1.default.fromValues(line[0][0] - line[1][0], line[0][1] - line[1][1]);
+    const prod = gl_vec2_1.default.dot(ptVec, lineVec);
+    const proj = prod / gl_vec2_1.default.len(lineVec);
+    const projVec = gl_vec2_1.default.fromValues(proj, proj);
+    const result = gl_vec2_1.default.normalize(lineVec, lineVec);
+    gl_vec2_1.default.mul(result, lineVec, projVec);
+    gl_vec2_1.default.add(result, result, line[1]);
+    return result;
+};
+exports.projectPointOnLine = projectPointOnLine;
+/**
+ * reflect a point on another point or a line
+ * @param pt source point to be mirrored
+ * @param axis mirror axis. either point (or line)
+ * @returns
+ */ const reflectPoint = (pt, axis)=>{
+    if (axis[0].constructor === Array) {
+        const projVec = gl_vec2_1.default.fromValues(...(0, exports.projectPointOnLine)(pt, axis));
+        const distVec = gl_vec2_1.default.sub([], gl_vec2_1.default.fromValues(pt[0], pt[1]), projVec);
+        const reflVec = gl_vec2_1.default.sub(projVec, projVec, distVec);
+        return reflVec;
+    } else return [
+        (0, math_1.reflect)(pt[0], axis[0]),
+        (0, math_1.reflect)(pt[1], axis[1]), 
+    ];
+};
+exports.reflectPoint = reflectPoint;
+/**
+ * reflect a path either on a point or a line
+ * @param pts data that needs to be mirrored
+ * @param axis mirror axis. either point or line
+ * @returns
+ */ const reflectPath = (pts, axis)=>{
+    return pts.map((pt)=>(0, exports.reflectPoint)(pt, axis));
+};
+exports.reflectPath = reflectPath;
+/**
+ * scale a single point
+ * @param pt a point [x, y]
+ * @param size [width, height] to scale to
+ * @returns scaled point [x, y]`
+ */ const scalePoint = (pt, size)=>{
+    const [x, y] = pt;
+    const [w, h] = size;
+    return [
+        x * w,
+        y * h
+    ];
+};
+exports.scalePoint = scalePoint;
+/**
+ * take normalized path data and return [ x, y ] scaled to width and height
+ * @param path array of [x, y] normalized point pairs
+ * @param size [width, height] to scale to
+ * @returns new array of [x, y]
+ */ const scalePath = (path, size)=>{
+    return path.map((pt)=>(0, exports.scalePoint)(pt, size));
+};
+exports.scalePath = scalePath;
+/**
+ * by default, path t value is based on number of points. this function calculates t based on each segment length.
+ *
+ * TODO:
+ * - implement
+ * @param path
+ * @returns {number[]} t values for each pt index
+ */ const calcTByLength = (path)=>{
+    return [];
+};
+exports.calcTByLength = calcTByLength;
 /**
  * combine 2 paths by a single connecting point.
  * if connecting points are the same, then add only one. (no duplicates)
@@ -914,6 +907,7 @@ exports.blendPath = blendPath;
  * - implementation
  * - what modes to use?: "start-first", "start-last", "end-first", "end-last"?
  * - snap one path to another by automatically moving it?
+ * - meet at halfway if two end points are not close enough (threshold)
  * @param path1 array of [x, y]
  * @param path2 array of [x, y]
  * @param mode from which point to which point to connect?
@@ -921,108 +915,86 @@ exports.blendPath = blendPath;
  */ const combinePath = (path1, path2, mode)=>{
     return path1;
 };
-exports.combinePath = combinePath; // module.exports = {
- //   getIdx,
- //   getSegment,
- //   getLocalT,
- //   getPos,
- //   scalePath,
- //   getPathLength,
- //   drawPath,
- //   createShapeFunc,
- //   interpolatePath,
- //   interpolateArray,
- //   interpolateObject,
- //   interpolate,
- //   extrudePath,
- //   blendPath,
- //   combinePath,
- // };
+exports.combinePath = combinePath;
 
-},{"@daeinc/math":"1EO4r","victor":"91UHF"}],"1EO4r":[function(require,module,exports) {
+},{"@daeinc/math":"jjGHS","gl-vec2":"82piL"}],"jjGHS":[function(require,module,exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.modIncl = exports.modf = exports.mod = exports.reflect = exports.snapToArray = exports.snapBy = exports.roundFloat = exports.floorFloat = exports.shakeNum = exports.constrain = exports.clamp = exports.map = exports.lerp = exports.mix = void 0;
+exports.snapToArray = exports.snapBy = exports.roundF = exports.reflect = exports.modIncl = exports.modF = exports.mod = exports.lerp = exports.mix = exports.map = exports.floorF = exports.distSq = exports.dist = exports.constrain = exports.clamp = void 0;
 /**
- * linear interpolation
+ * clamp values between min and max (=constrain)
+ * @param val
+ * @param min
+ * @param max
+ * @returns
+ */ const clamp = (val, min, max)=>Math.min(Math.max(val, min), max);
+exports.clamp = clamp;
+/**
+ * alias for clamp()
+ */ exports.constrain = exports.clamp;
+/**
+ *
+ * @param x1
+ * @param y1
+ * @param x2
+ * @param y2
+ * @returns
+ */ const dist = (x1, y1, x2, y2)=>{
+    return Math.sqrt((0, exports.distSq)(x1, y1, x2, y2));
+};
+exports.dist = dist;
+/**
+ * returns squared distance
+ * @param x1
+ * @param y1
+ * @param x2
+ * @param y2
+ * @returns
+ */ const distSq = (x1, y1, x2, y2)=>{
+    return (x2 - x1) ** 2 + (y2 - y1) ** 2;
+};
+exports.distSq = distSq;
+/**
+ *
+ * @param n number
+ * @param amp how far it can be away from input
+ * @returns
+ */ // export const shakeNum = (n: number, amp: number): number =>
+//   n + map(Math.random(), 0, 1, -1, 1) * amp;
+/**
+ * drop decimals after digit. good for array index (floor)
+ * @param n float number
+ * @param digit how many decimal digits to keep
+ * @returns
+ */ const floorF = (n, digit)=>{
+    n = parseFloat(n.toFixed(digit));
+    const factor = Math.pow(10, digit);
+    return Math.floor(n * factor) / factor;
+};
+exports.floorF = floorF;
+/**
+ *
+ * @param val
+ * @param s
+ * @param e
+ * @param ns
+ * @param ne
+ * @returns
+ */ const map = (val, s, e, ns, ne)=>ns + (val - s) / (e - s) * (ne - ns);
+exports.map = map;
+/**
+ * linear interpolation (=lerp)
  * @param a start value
  * @param b stop value
  * @param t amount 0..1
  * @returns
  */ const mix = (a, b, t)=>a * (1 - t) + b * t;
 exports.mix = mix;
-exports.lerp = exports.mix;
-const map = (val, s, e, ns, ne)=>ns + (val - s) / (e - s) * (ne - ns);
-exports.map = map;
-const clamp = (val, min, max)=>Math.min(Math.max(val, min), max);
-exports.clamp = clamp;
-exports.constrain = exports.clamp;
 /**
- *
- * @param n number
- * @param amp how far it can be away from input
- * @returns
- */ const shakeNum = (n, amp)=>n + (0, exports.map)(Math.random(), 0, 1, -1, 1) * amp;
-exports.shakeNum = shakeNum;
-/**
- * drop decimals after digit. good for array index (floor)
- * @param n float number
- * @param digit how many decimal digits to keep
- * @returns
- */ const floorFloat = (n, digit)=>{
-    n = parseFloat(n.toFixed(digit));
-    const factor = Math.pow(10, digit);
-    return Math.floor(n * factor) / factor;
-};
-exports.floorFloat = floorFloat;
-/**
- * good for drawing shapes to include the maximum value (round up)
- * @param n float number
- * @param digit how many float digits to keep
- * @returns
- */ const roundFloat = (n, digit)=>{
-    const factor = Math.pow(10, digit);
-    return Math.round(n * factor) / factor;
-};
-exports.roundFloat = roundFloat;
-/**
- * snap value to increment
- * @param n original number
- * @param inc increment to snap to.
- * @returns
- *
- */ const snapBy = (n, inc)=>{
-    return Math.round(n / inc) * inc;
-};
-exports.snapBy = snapBy;
-/**
- * snap to a value in array. whatever is closest to.
- * REVIEW: allow undefined? or throw error?
- * @param n original number
- * @param snapArr values to snap to
- * @returns {number | undefined}
- */ const snapToArray = (n, snapArr)=>{
-    snapArr.sort((a, b)=>a - b); // sort numbers in order
-    if (n <= snapArr[0]) return snapArr[0]; // if less than the smallest one
-    else if (n >= snapArr[snapArr.length - 1]) return snapArr[snapArr.length - 1]; // if greater than the largest num
-    else for(let i = 0; i < snapArr.length - 1; i++){
-        const prev = snapArr[i];
-        const next = snapArr[i + 1];
-        if (n > prev && n < next) return Math.abs(n - next) <= Math.abs(n - prev) ? next : prev;
-    }
-};
-exports.snapToArray = snapToArray;
-/**
- * mirror value along axis. good for creating mirrored version.
- * @param num number to flip
- * @param axis value to mirror against
- * @returns
- */ const reflect = (num, axis)=>{
-    return axis - (num - axis);
-};
-exports.reflect = reflect;
+ * alias for mix()
+ */ exports.lerp = exports.mix;
 /**
  * NOTE: it may not be accurate with non-integer numbers.
  * @param n
@@ -1038,13 +1010,13 @@ exports.mod = mod;
  * @param max modulo
  * @param precision float precision digits. defaults to 6
  * @returns
- */ const modf = (n, max, precision = 6)=>{
+ */ const modF = (n, max, precision = 6)=>{
     const mlt = Math.pow(10, precision); // multiplier to make it integer
     const ni = Math.floor(n * mlt);
     const maxi = Math.floor(max * mlt);
     return (ni % maxi + maxi) % maxi / mlt;
 };
-exports.modf = modf;
+exports.modF = modF;
 /**
  * inclusive modulo. modIncl(1, 3) will include 3.
  * can handle negative number and returns positive value
@@ -1055,1175 +1027,701 @@ exports.modf = modf;
     if (max < 0) throw new Error("modIncl(): 2nd arg must be >= 0");
     return n === max ? max : (n % max + max) % max;
 };
-exports.modIncl = modIncl; // module.exports = {
- //   mix,
- //   lerp,
- //   map,
- //   clamp,
- //   constrain,
- //   shakeNum,
- //   floorFloat,
- //   roundFloat,
- //   snapBy,
- //   snapToArray,
- //   flip,
- // };
-
-},{}],"91UHF":[function(require,module,exports) {
-exports = module.exports = Victor;
+exports.modIncl = modIncl;
 /**
- * # Victor - A JavaScript 2D vector class with methods for common vector operations
- */ /**
- * Constructor. Will also work without the `new` keyword
- *
- * ### Examples:
- *     var vec1 = new Victor(100, 50);
- *     var vec2 = Victor(42, 1337);
- *
- * @param {Number} x Value of the x axis
- * @param {Number} y Value of the y axis
- * @return {Victor}
- * @api public
- */ function Victor(x, y) {
-    if (!(this instanceof Victor)) return new Victor(x, y);
-    /**
-	 * The X axis
-	 *
-	 * ### Examples:
-	 *     var vec = new Victor.fromArray(42, 21);
-	 *
-	 *     vec.x;
-	 *     // => 42
-	 *
-	 * @api public
-	 */ this.x = x || 0;
-    /**
-	 * The Y axis
-	 *
-	 * ### Examples:
-	 *     var vec = new Victor.fromArray(42, 21);
-	 *
-	 *     vec.y;
-	 *     // => 21
-	 *
-	 * @api public
-	 */ this.y = y || 0;
-}
-/**
- * # Static
- */ /**
- * Creates a new instance from an array
- *
- * ### Examples:
- *     var vec = Victor.fromArray([42, 21]);
- *
- *     vec.toString();
- *     // => x:42, y:21
- *
- * @name Victor.fromArray
- * @param {Array} array Array with the x and y values at index 0 and 1 respectively
- * @return {Victor} The new instance
- * @api public
- */ Victor.fromArray = function(arr) {
-    return new Victor(arr[0] || 0, arr[1] || 0);
+ * reflect a scalar value along axis. good for creating reflected version.
+ * @param num number to flip
+ * @param axis value to reflect against
+ * @returns
+ */ const reflect = (num, axis)=>{
+    return axis - (num - axis);
 };
+exports.reflect = reflect;
 /**
- * Creates a new instance from an object
- *
- * ### Examples:
- *     var vec = Victor.fromObject({ x: 42, y: 21 });
- *
- *     vec.toString();
- *     // => x:42, y:21
- *
- * @name Victor.fromObject
- * @param {Object} obj Object with the values for x and y
- * @return {Victor} The new instance
- * @api public
- */ Victor.fromObject = function(obj) {
-    return new Victor(obj.x || 0, obj.y || 0);
+ * good for drawing shapes to include the maximum value (round up)
+ * @param n float number
+ * @param digit how many float digits to keep
+ * @returns
+ */ const roundF = (n, digit)=>{
+    const factor = Math.pow(10, digit);
+    return Math.round(n * factor) / factor;
 };
+exports.roundF = roundF;
 /**
- * # Manipulation
+ * snap value to increment
+ * @param n original number
+ * @param inc increment to snap to.
+ * @returns
  *
- * These functions are chainable.
- */ /**
- * Adds another vector's X axis to this one
- *
- * ### Examples:
- *     var vec1 = new Victor(10, 10);
- *     var vec2 = new Victor(20, 30);
- *
- *     vec1.addX(vec2);
- *     vec1.toString();
- *     // => x:30, y:10
- *
- * @param {Victor} vector The other vector you want to add to this one
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.addX = function(vec) {
-    this.x += vec.x;
-    return this;
+ */ const snapBy = (n, inc)=>{
+    return Math.round(n / inc) * inc;
 };
+exports.snapBy = snapBy;
 /**
- * Adds another vector's Y axis to this one
- *
- * ### Examples:
- *     var vec1 = new Victor(10, 10);
- *     var vec2 = new Victor(20, 30);
- *
- *     vec1.addY(vec2);
- *     vec1.toString();
- *     // => x:10, y:40
- *
- * @param {Victor} vector The other vector you want to add to this one
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.addY = function(vec) {
-    this.y += vec.y;
-    return this;
-};
-/**
- * Adds another vector to this one
- *
- * ### Examples:
- *     var vec1 = new Victor(10, 10);
- *     var vec2 = new Victor(20, 30);
- *
- *     vec1.add(vec2);
- *     vec1.toString();
- *     // => x:30, y:40
- *
- * @param {Victor} vector The other vector you want to add to this one
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.add = function(vec) {
-    this.x += vec.x;
-    this.y += vec.y;
-    return this;
-};
-/**
- * Adds the given scalar to both vector axis
- *
- * ### Examples:
- *     var vec = new Victor(1, 2);
- *
- *     vec.addScalar(2);
- *     vec.toString();
- *     // => x: 3, y: 4
- *
- * @param {Number} scalar The scalar to add
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.addScalar = function(scalar) {
-    this.x += scalar;
-    this.y += scalar;
-    return this;
-};
-/**
- * Adds the given scalar to the X axis
- *
- * ### Examples:
- *     var vec = new Victor(1, 2);
- *
- *     vec.addScalarX(2);
- *     vec.toString();
- *     // => x: 3, y: 2
- *
- * @param {Number} scalar The scalar to add
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.addScalarX = function(scalar) {
-    this.x += scalar;
-    return this;
-};
-/**
- * Adds the given scalar to the Y axis
- *
- * ### Examples:
- *     var vec = new Victor(1, 2);
- *
- *     vec.addScalarY(2);
- *     vec.toString();
- *     // => x: 1, y: 4
- *
- * @param {Number} scalar The scalar to add
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.addScalarY = function(scalar) {
-    this.y += scalar;
-    return this;
-};
-/**
- * Subtracts the X axis of another vector from this one
- *
- * ### Examples:
- *     var vec1 = new Victor(100, 50);
- *     var vec2 = new Victor(20, 30);
- *
- *     vec1.subtractX(vec2);
- *     vec1.toString();
- *     // => x:80, y:50
- *
- * @param {Victor} vector The other vector you want subtract from this one
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.subtractX = function(vec) {
-    this.x -= vec.x;
-    return this;
-};
-/**
- * Subtracts the Y axis of another vector from this one
- *
- * ### Examples:
- *     var vec1 = new Victor(100, 50);
- *     var vec2 = new Victor(20, 30);
- *
- *     vec1.subtractY(vec2);
- *     vec1.toString();
- *     // => x:100, y:20
- *
- * @param {Victor} vector The other vector you want subtract from this one
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.subtractY = function(vec) {
-    this.y -= vec.y;
-    return this;
-};
-/**
- * Subtracts another vector from this one
- *
- * ### Examples:
- *     var vec1 = new Victor(100, 50);
- *     var vec2 = new Victor(20, 30);
- *
- *     vec1.subtract(vec2);
- *     vec1.toString();
- *     // => x:80, y:20
- *
- * @param {Victor} vector The other vector you want subtract from this one
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.subtract = function(vec) {
-    this.x -= vec.x;
-    this.y -= vec.y;
-    return this;
-};
-/**
- * Subtracts the given scalar from both axis
- *
- * ### Examples:
- *     var vec = new Victor(100, 200);
- *
- *     vec.subtractScalar(20);
- *     vec.toString();
- *     // => x: 80, y: 180
- *
- * @param {Number} scalar The scalar to subtract
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.subtractScalar = function(scalar) {
-    this.x -= scalar;
-    this.y -= scalar;
-    return this;
-};
-/**
- * Subtracts the given scalar from the X axis
- *
- * ### Examples:
- *     var vec = new Victor(100, 200);
- *
- *     vec.subtractScalarX(20);
- *     vec.toString();
- *     // => x: 80, y: 200
- *
- * @param {Number} scalar The scalar to subtract
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.subtractScalarX = function(scalar) {
-    this.x -= scalar;
-    return this;
-};
-/**
- * Subtracts the given scalar from the Y axis
- *
- * ### Examples:
- *     var vec = new Victor(100, 200);
- *
- *     vec.subtractScalarY(20);
- *     vec.toString();
- *     // => x: 100, y: 180
- *
- * @param {Number} scalar The scalar to subtract
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.subtractScalarY = function(scalar) {
-    this.y -= scalar;
-    return this;
-};
-/**
- * Divides the X axis by the x component of given vector
- *
- * ### Examples:
- *     var vec = new Victor(100, 50);
- *     var vec2 = new Victor(2, 0);
- *
- *     vec.divideX(vec2);
- *     vec.toString();
- *     // => x:50, y:50
- *
- * @param {Victor} vector The other vector you want divide by
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.divideX = function(vector) {
-    this.x /= vector.x;
-    return this;
-};
-/**
- * Divides the Y axis by the y component of given vector
- *
- * ### Examples:
- *     var vec = new Victor(100, 50);
- *     var vec2 = new Victor(0, 2);
- *
- *     vec.divideY(vec2);
- *     vec.toString();
- *     // => x:100, y:25
- *
- * @param {Victor} vector The other vector you want divide by
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.divideY = function(vector) {
-    this.y /= vector.y;
-    return this;
-};
-/**
- * Divides both vector axis by a axis values of given vector
- *
- * ### Examples:
- *     var vec = new Victor(100, 50);
- *     var vec2 = new Victor(2, 2);
- *
- *     vec.divide(vec2);
- *     vec.toString();
- *     // => x:50, y:25
- *
- * @param {Victor} vector The vector to divide by
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.divide = function(vector) {
-    this.x /= vector.x;
-    this.y /= vector.y;
-    return this;
-};
-/**
- * Divides both vector axis by the given scalar value
- *
- * ### Examples:
- *     var vec = new Victor(100, 50);
- *
- *     vec.divideScalar(2);
- *     vec.toString();
- *     // => x:50, y:25
- *
- * @param {Number} The scalar to divide by
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.divideScalar = function(scalar) {
-    if (scalar !== 0) {
-        this.x /= scalar;
-        this.y /= scalar;
-    } else {
-        this.x = 0;
-        this.y = 0;
+ * snap to a value in array. whatever is closest to.
+ * @param n original number
+ * @param snapArr values to snap to
+ * @returns {number | undefined}
+ */ const snapToArray = (n, snapArr)=>{
+    snapArr.sort((a, b)=>a - b); // sort numbers in order
+    if (n <= snapArr[0]) return snapArr[0]; // if less than the smallest one
+    else if (n >= snapArr[snapArr.length - 1]) return snapArr[snapArr.length - 1]; // if greater than the largest num
+    else for(let i = 0; i < snapArr.length - 1; i++){
+        const prev = snapArr[i];
+        const next = snapArr[i + 1];
+        if (n > prev && n < next) return Math.abs(n - next) <= Math.abs(n - prev) ? next : prev;
     }
-    return this;
+    throw new Error("snapToArray(): did not meet any condition");
 };
+exports.snapToArray = snapToArray;
+
+},{}],"82piL":[function(require,module,exports) {
+module.exports = {
+    EPSILON: require("./epsilon"),
+    create: require("./create"),
+    clone: require("./clone"),
+    fromValues: require("./fromValues"),
+    copy: require("./copy"),
+    set: require("./set"),
+    equals: require("./equals"),
+    exactEquals: require("./exactEquals"),
+    add: require("./add"),
+    subtract: require("./subtract"),
+    sub: require("./sub"),
+    multiply: require("./multiply"),
+    mul: require("./mul"),
+    divide: require("./divide"),
+    div: require("./div"),
+    inverse: require("./inverse"),
+    min: require("./min"),
+    max: require("./max"),
+    rotate: require("./rotate"),
+    floor: require("./floor"),
+    ceil: require("./ceil"),
+    round: require("./round"),
+    scale: require("./scale"),
+    scaleAndAdd: require("./scaleAndAdd"),
+    distance: require("./distance"),
+    dist: require("./dist"),
+    squaredDistance: require("./squaredDistance"),
+    sqrDist: require("./sqrDist"),
+    length: require("./length"),
+    len: require("./len"),
+    squaredLength: require("./squaredLength"),
+    sqrLen: require("./sqrLen"),
+    negate: require("./negate"),
+    normalize: require("./normalize"),
+    dot: require("./dot"),
+    cross: require("./cross"),
+    lerp: require("./lerp"),
+    random: require("./random"),
+    transformMat2: require("./transformMat2"),
+    transformMat2d: require("./transformMat2d"),
+    transformMat3: require("./transformMat3"),
+    transformMat4: require("./transformMat4"),
+    forEach: require("./forEach"),
+    limit: require("./limit")
+};
+
+},{"./epsilon":"iJXI0","./create":"2vq2Z","./clone":"7aaIu","./fromValues":"1PQHu","./copy":"3VC11","./set":"eG683","./equals":"5i9tg","./exactEquals":"hsR4x","./add":"kgsY0","./subtract":"7jl3S","./sub":"a1bJU","./multiply":"6umjJ","./mul":"h6rnG","./divide":"64VNN","./div":"7wFMS","./inverse":"530vd","./min":"bF5U2","./max":"5O0kd","./rotate":"kG9AA","./floor":"1EoSB","./ceil":"kB1An","./round":"ylSLB","./scale":"ijYsa","./scaleAndAdd":"3Cioq","./distance":"7Ui9e","./dist":"1ovmd","./squaredDistance":"4hBLD","./sqrDist":"3qjLM","./length":"jYOQD","./len":"7CBIr","./squaredLength":"e1IZo","./sqrLen":"bKn7j","./negate":"78cQ9","./normalize":"5uPFR","./dot":"bwVNO","./cross":"jJL5Q","./lerp":"94IP9","./random":"erLFY","./transformMat2":"krmPX","./transformMat2d":"5gyTg","./transformMat3":"65V1G","./transformMat4":"dP164","./forEach":"2VzZZ","./limit":"cs7tR"}],"iJXI0":[function(require,module,exports) {
+module.exports = 0.000001;
+
+},{}],"2vq2Z":[function(require,module,exports) {
+module.exports = create;
 /**
- * Divides the X axis by the given scalar value
- *
- * ### Examples:
- *     var vec = new Victor(100, 50);
- *
- *     vec.divideScalarX(2);
- *     vec.toString();
- *     // => x:50, y:50
- *
- * @param {Number} The scalar to divide by
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.divideScalarX = function(scalar) {
-    if (scalar !== 0) this.x /= scalar;
-    else this.x = 0;
-    return this;
-};
-/**
- * Divides the Y axis by the given scalar value
- *
- * ### Examples:
- *     var vec = new Victor(100, 50);
- *
- *     vec.divideScalarY(2);
- *     vec.toString();
- *     // => x:100, y:25
- *
- * @param {Number} The scalar to divide by
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.divideScalarY = function(scalar) {
-    if (scalar !== 0) this.y /= scalar;
-    else this.y = 0;
-    return this;
-};
-/**
- * Inverts the X axis
- *
- * ### Examples:
- *     var vec = new Victor(100, 50);
- *
- *     vec.invertX();
- *     vec.toString();
- *     // => x:-100, y:50
- *
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.invertX = function() {
-    this.x *= -1;
-    return this;
-};
-/**
- * Inverts the Y axis
- *
- * ### Examples:
- *     var vec = new Victor(100, 50);
- *
- *     vec.invertY();
- *     vec.toString();
- *     // => x:100, y:-50
- *
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.invertY = function() {
-    this.y *= -1;
-    return this;
-};
-/**
- * Inverts both axis
- *
- * ### Examples:
- *     var vec = new Victor(100, 50);
- *
- *     vec.invert();
- *     vec.toString();
- *     // => x:-100, y:-50
- *
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.invert = function() {
-    this.invertX();
-    this.invertY();
-    return this;
-};
-/**
- * Multiplies the X axis by X component of given vector
- *
- * ### Examples:
- *     var vec = new Victor(100, 50);
- *     var vec2 = new Victor(2, 0);
- *
- *     vec.multiplyX(vec2);
- *     vec.toString();
- *     // => x:200, y:50
- *
- * @param {Victor} vector The vector to multiply the axis with
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.multiplyX = function(vector) {
-    this.x *= vector.x;
-    return this;
-};
-/**
- * Multiplies the Y axis by Y component of given vector
- *
- * ### Examples:
- *     var vec = new Victor(100, 50);
- *     var vec2 = new Victor(0, 2);
- *
- *     vec.multiplyX(vec2);
- *     vec.toString();
- *     // => x:100, y:100
- *
- * @param {Victor} vector The vector to multiply the axis with
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.multiplyY = function(vector) {
-    this.y *= vector.y;
-    return this;
-};
-/**
- * Multiplies both vector axis by values from a given vector
- *
- * ### Examples:
- *     var vec = new Victor(100, 50);
- *     var vec2 = new Victor(2, 2);
- *
- *     vec.multiply(vec2);
- *     vec.toString();
- *     // => x:200, y:100
- *
- * @param {Victor} vector The vector to multiply by
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.multiply = function(vector) {
-    this.x *= vector.x;
-    this.y *= vector.y;
-    return this;
-};
-/**
- * Multiplies both vector axis by the given scalar value
- *
- * ### Examples:
- *     var vec = new Victor(100, 50);
- *
- *     vec.multiplyScalar(2);
- *     vec.toString();
- *     // => x:200, y:100
- *
- * @param {Number} The scalar to multiply by
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.multiplyScalar = function(scalar) {
-    this.x *= scalar;
-    this.y *= scalar;
-    return this;
-};
-/**
- * Multiplies the X axis by the given scalar
- *
- * ### Examples:
- *     var vec = new Victor(100, 50);
- *
- *     vec.multiplyScalarX(2);
- *     vec.toString();
- *     // => x:200, y:50
- *
- * @param {Number} The scalar to multiply the axis with
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.multiplyScalarX = function(scalar) {
-    this.x *= scalar;
-    return this;
-};
-/**
- * Multiplies the Y axis by the given scalar
- *
- * ### Examples:
- *     var vec = new Victor(100, 50);
- *
- *     vec.multiplyScalarY(2);
- *     vec.toString();
- *     // => x:100, y:100
- *
- * @param {Number} The scalar to multiply the axis with
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.multiplyScalarY = function(scalar) {
-    this.y *= scalar;
-    return this;
-};
-/**
- * Normalize
- *
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.normalize = function() {
-    var length = this.length();
-    if (length === 0) {
-        this.x = 1;
-        this.y = 0;
-    } else this.divide(Victor(length, length));
-    return this;
-};
-Victor.prototype.norm = Victor.prototype.normalize;
-/**
- * If the absolute vector axis is greater than `max`, multiplies the axis by `factor`
- *
- * ### Examples:
- *     var vec = new Victor(100, 50);
- *
- *     vec.limit(80, 0.9);
- *     vec.toString();
- *     // => x:90, y:50
- *
- * @param {Number} max The maximum value for both x and y axis
- * @param {Number} factor Factor by which the axis are to be multiplied with
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.limit = function(max, factor) {
-    if (Math.abs(this.x) > max) this.x *= factor;
-    if (Math.abs(this.y) > max) this.y *= factor;
-    return this;
-};
-/**
- * Randomizes both vector axis with a value between 2 vectors
- *
- * ### Examples:
- *     var vec = new Victor(100, 50);
- *
- *     vec.randomize(new Victor(50, 60), new Victor(70, 80`));
- *     vec.toString();
- *     // => x:67, y:73
- *
- * @param {Victor} topLeft first vector
- * @param {Victor} bottomRight second vector
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.randomize = function(topLeft, bottomRight) {
-    this.randomizeX(topLeft, bottomRight);
-    this.randomizeY(topLeft, bottomRight);
-    return this;
-};
-/**
- * Randomizes the y axis with a value between 2 vectors
- *
- * ### Examples:
- *     var vec = new Victor(100, 50);
- *
- *     vec.randomizeX(new Victor(50, 60), new Victor(70, 80`));
- *     vec.toString();
- *     // => x:55, y:50
- *
- * @param {Victor} topLeft first vector
- * @param {Victor} bottomRight second vector
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.randomizeX = function(topLeft, bottomRight) {
-    var min = Math.min(topLeft.x, bottomRight.x);
-    var max = Math.max(topLeft.x, bottomRight.x);
-    this.x = random(min, max);
-    return this;
-};
-/**
- * Randomizes the y axis with a value between 2 vectors
- *
- * ### Examples:
- *     var vec = new Victor(100, 50);
- *
- *     vec.randomizeY(new Victor(50, 60), new Victor(70, 80`));
- *     vec.toString();
- *     // => x:100, y:66
- *
- * @param {Victor} topLeft first vector
- * @param {Victor} bottomRight second vector
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.randomizeY = function(topLeft, bottomRight) {
-    var min = Math.min(topLeft.y, bottomRight.y);
-    var max = Math.max(topLeft.y, bottomRight.y);
-    this.y = random(min, max);
-    return this;
-};
-/**
- * Randomly randomizes either axis between 2 vectors
- *
- * ### Examples:
- *     var vec = new Victor(100, 50);
- *
- *     vec.randomizeAny(new Victor(50, 60), new Victor(70, 80));
- *     vec.toString();
- *     // => x:100, y:77
- *
- * @param {Victor} topLeft first vector
- * @param {Victor} bottomRight second vector
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.randomizeAny = function(topLeft, bottomRight) {
-    if (!!Math.round(Math.random())) this.randomizeX(topLeft, bottomRight);
-    else this.randomizeY(topLeft, bottomRight);
-    return this;
-};
-/**
- * Rounds both axis to an integer value
- *
- * ### Examples:
- *     var vec = new Victor(100.2, 50.9);
- *
- *     vec.unfloat();
- *     vec.toString();
- *     // => x:100, y:51
- *
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.unfloat = function() {
-    this.x = Math.round(this.x);
-    this.y = Math.round(this.y);
-    return this;
-};
-/**
- * Rounds both axis to a certain precision
- *
- * ### Examples:
- *     var vec = new Victor(100.2, 50.9);
- *
- *     vec.unfloat();
- *     vec.toString();
- *     // => x:100, y:51
- *
- * @param {Number} Precision (default: 8)
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.toFixed = function(precision) {
-    if (typeof precision === "undefined") precision = 8;
-    this.x = this.x.toFixed(precision);
-    this.y = this.y.toFixed(precision);
-    return this;
-};
-/**
- * Performs a linear blend / interpolation of the X axis towards another vector
- *
- * ### Examples:
- *     var vec1 = new Victor(100, 100);
- *     var vec2 = new Victor(200, 200);
- *
- *     vec1.mixX(vec2, 0.5);
- *     vec.toString();
- *     // => x:150, y:100
- *
- * @param {Victor} vector The other vector
- * @param {Number} amount The blend amount (optional, default: 0.5)
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.mixX = function(vec, amount) {
-    if (typeof amount === "undefined") amount = 0.5;
-    this.x = (1 - amount) * this.x + amount * vec.x;
-    return this;
-};
-/**
- * Performs a linear blend / interpolation of the Y axis towards another vector
- *
- * ### Examples:
- *     var vec1 = new Victor(100, 100);
- *     var vec2 = new Victor(200, 200);
- *
- *     vec1.mixY(vec2, 0.5);
- *     vec.toString();
- *     // => x:100, y:150
- *
- * @param {Victor} vector The other vector
- * @param {Number} amount The blend amount (optional, default: 0.5)
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.mixY = function(vec, amount) {
-    if (typeof amount === "undefined") amount = 0.5;
-    this.y = (1 - amount) * this.y + amount * vec.y;
-    return this;
-};
-/**
- * Performs a linear blend / interpolation towards another vector
- *
- * ### Examples:
- *     var vec1 = new Victor(100, 100);
- *     var vec2 = new Victor(200, 200);
- *
- *     vec1.mix(vec2, 0.5);
- *     vec.toString();
- *     // => x:150, y:150
- *
- * @param {Victor} vector The other vector
- * @param {Number} amount The blend amount (optional, default: 0.5)
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.mix = function(vec, amount) {
-    this.mixX(vec, amount);
-    this.mixY(vec, amount);
-    return this;
-};
-/**
- * # Products
- */ /**
- * Creates a clone of this vector
- *
- * ### Examples:
- *     var vec1 = new Victor(10, 10);
- *     var vec2 = vec1.clone();
- *
- *     vec2.toString();
- *     // => x:10, y:10
- *
- * @return {Victor} A clone of the vector
- * @api public
- */ Victor.prototype.clone = function() {
-    return new Victor(this.x, this.y);
-};
-/**
- * Copies another vector's X component in to its own
- *
- * ### Examples:
- *     var vec1 = new Victor(10, 10);
- *     var vec2 = new Victor(20, 20);
- *     var vec2 = vec1.copyX(vec1);
- *
- *     vec2.toString();
- *     // => x:20, y:10
- *
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.copyX = function(vec) {
-    this.x = vec.x;
-    return this;
-};
-/**
- * Copies another vector's Y component in to its own
- *
- * ### Examples:
- *     var vec1 = new Victor(10, 10);
- *     var vec2 = new Victor(20, 20);
- *     var vec2 = vec1.copyY(vec1);
- *
- *     vec2.toString();
- *     // => x:10, y:20
- *
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.copyY = function(vec) {
-    this.y = vec.y;
-    return this;
-};
-/**
- * Copies another vector's X and Y components in to its own
- *
- * ### Examples:
- *     var vec1 = new Victor(10, 10);
- *     var vec2 = new Victor(20, 20);
- *     var vec2 = vec1.copy(vec1);
- *
- *     vec2.toString();
- *     // => x:20, y:20
- *
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.copy = function(vec) {
-    this.copyX(vec);
-    this.copyY(vec);
-    return this;
-};
-/**
- * Sets the vector to zero (0,0)
- *
- * ### Examples:
- *     var vec1 = new Victor(10, 10);
- *		 var1.zero();
- *     vec1.toString();
- *     // => x:0, y:0
- *
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.zero = function() {
-    this.x = this.y = 0;
-    return this;
-};
-/**
- * Calculates the dot product of this vector and another
- *
- * ### Examples:
- *     var vec1 = new Victor(100, 50);
- *     var vec2 = new Victor(200, 60);
- *
- *     vec1.dot(vec2);
- *     // => 23000
- *
- * @param {Victor} vector The second vector
- * @return {Number} Dot product
- * @api public
- */ Victor.prototype.dot = function(vec2) {
-    return this.x * vec2.x + this.y * vec2.y;
-};
-Victor.prototype.cross = function(vec2) {
-    return this.x * vec2.y - this.y * vec2.x;
-};
-/**
- * Projects a vector onto another vector, setting itself to the result.
- *
- * ### Examples:
- *     var vec = new Victor(100, 0);
- *     var vec2 = new Victor(100, 100);
- *
- *     vec.projectOnto(vec2);
- *     vec.toString();
- *     // => x:50, y:50
- *
- * @param {Victor} vector The other vector you want to project this vector onto
- * @return {Victor} `this` for chaining capabilities
- * @api public
- */ Victor.prototype.projectOnto = function(vec2) {
-    var coeff = (this.x * vec2.x + this.y * vec2.y) / (vec2.x * vec2.x + vec2.y * vec2.y);
-    this.x = coeff * vec2.x;
-    this.y = coeff * vec2.y;
-    return this;
-};
-Victor.prototype.horizontalAngle = function() {
-    return Math.atan2(this.y, this.x);
-};
-Victor.prototype.horizontalAngleDeg = function() {
-    return radian2degrees(this.horizontalAngle());
-};
-Victor.prototype.verticalAngle = function() {
-    return Math.atan2(this.x, this.y);
-};
-Victor.prototype.verticalAngleDeg = function() {
-    return radian2degrees(this.verticalAngle());
-};
-Victor.prototype.angle = Victor.prototype.horizontalAngle;
-Victor.prototype.angleDeg = Victor.prototype.horizontalAngleDeg;
-Victor.prototype.direction = Victor.prototype.horizontalAngle;
-Victor.prototype.rotate = function(angle) {
-    var nx = this.x * Math.cos(angle) - this.y * Math.sin(angle);
-    var ny = this.x * Math.sin(angle) + this.y * Math.cos(angle);
-    this.x = nx;
-    this.y = ny;
-    return this;
-};
-Victor.prototype.rotateDeg = function(angle) {
-    angle = degrees2radian(angle);
-    return this.rotate(angle);
-};
-Victor.prototype.rotateTo = function(rotation) {
-    return this.rotate(rotation - this.angle());
-};
-Victor.prototype.rotateToDeg = function(rotation) {
-    rotation = degrees2radian(rotation);
-    return this.rotateTo(rotation);
-};
-Victor.prototype.rotateBy = function(rotation) {
-    var angle = this.angle() + rotation;
-    return this.rotate(angle);
-};
-Victor.prototype.rotateByDeg = function(rotation) {
-    rotation = degrees2radian(rotation);
-    return this.rotateBy(rotation);
-};
-/**
- * Calculates the distance of the X axis between this vector and another
- *
- * ### Examples:
- *     var vec1 = new Victor(100, 50);
- *     var vec2 = new Victor(200, 60);
- *
- *     vec1.distanceX(vec2);
- *     // => -100
- *
- * @param {Victor} vector The second vector
- * @return {Number} Distance
- * @api public
- */ Victor.prototype.distanceX = function(vec) {
-    return this.x - vec.x;
-};
-/**
- * Same as `distanceX()` but always returns an absolute number
- *
- * ### Examples:
- *     var vec1 = new Victor(100, 50);
- *     var vec2 = new Victor(200, 60);
- *
- *     vec1.absDistanceX(vec2);
- *     // => 100
- *
- * @param {Victor} vector The second vector
- * @return {Number} Absolute distance
- * @api public
- */ Victor.prototype.absDistanceX = function(vec) {
-    return Math.abs(this.distanceX(vec));
-};
-/**
- * Calculates the distance of the Y axis between this vector and another
- *
- * ### Examples:
- *     var vec1 = new Victor(100, 50);
- *     var vec2 = new Victor(200, 60);
- *
- *     vec1.distanceY(vec2);
- *     // => -10
- *
- * @param {Victor} vector The second vector
- * @return {Number} Distance
- * @api public
- */ Victor.prototype.distanceY = function(vec) {
-    return this.y - vec.y;
-};
-/**
- * Same as `distanceY()` but always returns an absolute number
- *
- * ### Examples:
- *     var vec1 = new Victor(100, 50);
- *     var vec2 = new Victor(200, 60);
- *
- *     vec1.distanceY(vec2);
- *     // => 10
- *
- * @param {Victor} vector The second vector
- * @return {Number} Absolute distance
- * @api public
- */ Victor.prototype.absDistanceY = function(vec) {
-    return Math.abs(this.distanceY(vec));
-};
-/**
- * Calculates the euclidean distance between this vector and another
- *
- * ### Examples:
- *     var vec1 = new Victor(100, 50);
- *     var vec2 = new Victor(200, 60);
- *
- *     vec1.distance(vec2);
- *     // => 100.4987562112089
- *
- * @param {Victor} vector The second vector
- * @return {Number} Distance
- * @api public
- */ Victor.prototype.distance = function(vec) {
-    return Math.sqrt(this.distanceSq(vec));
-};
-/**
- * Calculates the squared euclidean distance between this vector and another
- *
- * ### Examples:
- *     var vec1 = new Victor(100, 50);
- *     var vec2 = new Victor(200, 60);
- *
- *     vec1.distanceSq(vec2);
- *     // => 10100
- *
- * @param {Victor} vector The second vector
- * @return {Number} Distance
- * @api public
- */ Victor.prototype.distanceSq = function(vec) {
-    var dx = this.distanceX(vec), dy = this.distanceY(vec);
-    return dx * dx + dy * dy;
-};
-/**
- * Calculates the length or magnitude of the vector
- *
- * ### Examples:
- *     var vec = new Victor(100, 50);
- *
- *     vec.length();
- *     // => 111.80339887498948
- *
- * @return {Number} Length / Magnitude
- * @api public
- */ Victor.prototype.length = function() {
-    return Math.sqrt(this.lengthSq());
-};
-/**
- * Squared length / magnitude
- *
- * ### Examples:
- *     var vec = new Victor(100, 50);
- *
- *     vec.lengthSq();
- *     // => 12500
- *
- * @return {Number} Length / Magnitude
- * @api public
- */ Victor.prototype.lengthSq = function() {
-    return this.x * this.x + this.y * this.y;
-};
-Victor.prototype.magnitude = Victor.prototype.length;
-/**
- * Returns a true if vector is (0, 0)
- *
- * ### Examples:
- *     var vec = new Victor(100, 50);
- *     vec.zero();
- *
- *     // => true
- *
- * @return {Boolean}
- * @api public
- */ Victor.prototype.isZero = function() {
-    return this.x === 0 && this.y === 0;
-};
-/**
- * Returns a true if this vector is the same as another
- *
- * ### Examples:
- *     var vec1 = new Victor(100, 50);
- *     var vec2 = new Victor(100, 50);
- *     vec1.isEqualTo(vec2);
- *
- *     // => true
- *
- * @return {Boolean}
- * @api public
- */ Victor.prototype.isEqualTo = function(vec2) {
-    return this.x === vec2.x && this.y === vec2.y;
-};
-/**
- * # Utility Methods
- */ /**
- * Returns an string representation of the vector
- *
- * ### Examples:
- *     var vec = new Victor(10, 20);
- *
- *     vec.toString();
- *     // => x:10, y:20
- *
- * @return {String}
- * @api public
- */ Victor.prototype.toString = function() {
-    return "x:" + this.x + ", y:" + this.y;
-};
-/**
- * Returns an array representation of the vector
- *
- * ### Examples:
- *     var vec = new Victor(10, 20);
- *
- *     vec.toArray();
- *     // => [10, 20]
- *
- * @return {Array}
- * @api public
- */ Victor.prototype.toArray = function() {
-    return [
-        this.x,
-        this.y
-    ];
-};
-/**
- * Returns an object representation of the vector
- *
- * ### Examples:
- *     var vec = new Victor(10, 20);
- *
- *     vec.toObject();
- *     // => { x: 10, y: 20 }
- *
- * @return {Object}
- * @api public
- */ Victor.prototype.toObject = function() {
-    return {
-        x: this.x,
-        y: this.y
-    };
-};
-var degrees = 180 / Math.PI;
-function random(min, max) {
-    return Math.floor(Math.random() * (max - min + 1) + min);
-}
-function radian2degrees(rad) {
-    return rad * degrees;
-}
-function degrees2radian(deg) {
-    return deg / degrees;
+ * Creates a new, empty vec2
+ *
+ * @returns {vec2} a new 2D vector
+ */ function create() {
+    var out = new Float32Array(2);
+    out[0] = 0;
+    out[1] = 0;
+    return out;
 }
 
-},{}],"88W4y":[function(require,module,exports) {
+},{}],"7aaIu":[function(require,module,exports) {
+module.exports = clone;
+/**
+ * Creates a new vec2 initialized with values from an existing vector
+ *
+ * @param {vec2} a vector to clone
+ * @returns {vec2} a new 2D vector
+ */ function clone(a) {
+    var out = new Float32Array(2);
+    out[0] = a[0];
+    out[1] = a[1];
+    return out;
+}
+
+},{}],"1PQHu":[function(require,module,exports) {
+module.exports = fromValues;
+/**
+ * Creates a new vec2 initialized with the given values
+ *
+ * @param {Number} x X component
+ * @param {Number} y Y component
+ * @returns {vec2} a new 2D vector
+ */ function fromValues(x, y) {
+    var out = new Float32Array(2);
+    out[0] = x;
+    out[1] = y;
+    return out;
+}
+
+},{}],"3VC11":[function(require,module,exports) {
+module.exports = copy;
+/**
+ * Copy the values from one vec2 to another
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a the source vector
+ * @returns {vec2} out
+ */ function copy(out, a) {
+    out[0] = a[0];
+    out[1] = a[1];
+    return out;
+}
+
+},{}],"eG683":[function(require,module,exports) {
+module.exports = set;
+/**
+ * Set the components of a vec2 to the given values
+ *
+ * @param {vec2} out the receiving vector
+ * @param {Number} x X component
+ * @param {Number} y Y component
+ * @returns {vec2} out
+ */ function set(out, x, y) {
+    out[0] = x;
+    out[1] = y;
+    return out;
+}
+
+},{}],"5i9tg":[function(require,module,exports) {
+module.exports = equals;
+var EPSILON = require("./epsilon");
+/**
+ * Returns whether or not the vectors have approximately the same elements in the same position.
+ *
+ * @param {vec2} a The first vector.
+ * @param {vec2} b The second vector.
+ * @returns {Boolean} True if the vectors are equal, false otherwise.
+ */ function equals(a, b) {
+    var a0 = a[0];
+    var a1 = a[1];
+    var b0 = b[0];
+    var b1 = b[1];
+    return Math.abs(a0 - b0) <= EPSILON * Math.max(1.0, Math.abs(a0), Math.abs(b0)) && Math.abs(a1 - b1) <= EPSILON * Math.max(1.0, Math.abs(a1), Math.abs(b1));
+}
+
+},{"./epsilon":"iJXI0"}],"hsR4x":[function(require,module,exports) {
+module.exports = exactEquals;
+/**
+ * Returns whether or not the vectors exactly have the same elements in the same position (when compared with ===)
+ *
+ * @param {vec2} a The first vector.
+ * @param {vec2} b The second vector.
+ * @returns {Boolean} True if the vectors are equal, false otherwise.
+ */ function exactEquals(a, b) {
+    return a[0] === b[0] && a[1] === b[1];
+}
+
+},{}],"kgsY0":[function(require,module,exports) {
+module.exports = add;
+/**
+ * Adds two vec2's
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a the first operand
+ * @param {vec2} b the second operand
+ * @returns {vec2} out
+ */ function add(out, a, b) {
+    out[0] = a[0] + b[0];
+    out[1] = a[1] + b[1];
+    return out;
+}
+
+},{}],"7jl3S":[function(require,module,exports) {
+module.exports = subtract;
+/**
+ * Subtracts vector b from vector a
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a the first operand
+ * @param {vec2} b the second operand
+ * @returns {vec2} out
+ */ function subtract(out, a, b) {
+    out[0] = a[0] - b[0];
+    out[1] = a[1] - b[1];
+    return out;
+}
+
+},{}],"a1bJU":[function(require,module,exports) {
+module.exports = require("./subtract");
+
+},{"./subtract":"7jl3S"}],"6umjJ":[function(require,module,exports) {
+module.exports = multiply;
+/**
+ * Multiplies two vec2's
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a the first operand
+ * @param {vec2} b the second operand
+ * @returns {vec2} out
+ */ function multiply(out, a, b) {
+    out[0] = a[0] * b[0];
+    out[1] = a[1] * b[1];
+    return out;
+}
+
+},{}],"h6rnG":[function(require,module,exports) {
+module.exports = require("./multiply");
+
+},{"./multiply":"6umjJ"}],"64VNN":[function(require,module,exports) {
+module.exports = divide;
+/**
+ * Divides two vec2's
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a the first operand
+ * @param {vec2} b the second operand
+ * @returns {vec2} out
+ */ function divide(out, a, b) {
+    out[0] = a[0] / b[0];
+    out[1] = a[1] / b[1];
+    return out;
+}
+
+},{}],"7wFMS":[function(require,module,exports) {
+module.exports = require("./divide");
+
+},{"./divide":"64VNN"}],"530vd":[function(require,module,exports) {
+module.exports = inverse;
+/**
+ * Returns the inverse of the components of a vec2
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a vector to invert
+ * @returns {vec2} out
+ */ function inverse(out, a) {
+    out[0] = 1.0 / a[0];
+    out[1] = 1.0 / a[1];
+    return out;
+}
+
+},{}],"bF5U2":[function(require,module,exports) {
+module.exports = min;
+/**
+ * Returns the minimum of two vec2's
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a the first operand
+ * @param {vec2} b the second operand
+ * @returns {vec2} out
+ */ function min(out, a, b) {
+    out[0] = Math.min(a[0], b[0]);
+    out[1] = Math.min(a[1], b[1]);
+    return out;
+}
+
+},{}],"5O0kd":[function(require,module,exports) {
+module.exports = max;
+/**
+ * Returns the maximum of two vec2's
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a the first operand
+ * @param {vec2} b the second operand
+ * @returns {vec2} out
+ */ function max(out, a, b) {
+    out[0] = Math.max(a[0], b[0]);
+    out[1] = Math.max(a[1], b[1]);
+    return out;
+}
+
+},{}],"kG9AA":[function(require,module,exports) {
+module.exports = rotate;
+/**
+ * Rotates a vec2 by an angle
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a the vector to rotate
+ * @param {Number} angle the angle of rotation (in radians)
+ * @returns {vec2} out
+ */ function rotate(out, a, angle) {
+    var c = Math.cos(angle), s = Math.sin(angle);
+    var x = a[0], y = a[1];
+    out[0] = x * c - y * s;
+    out[1] = x * s + y * c;
+    return out;
+}
+
+},{}],"1EoSB":[function(require,module,exports) {
+module.exports = floor;
+/**
+ * Math.floor the components of a vec2
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a vector to floor
+ * @returns {vec2} out
+ */ function floor(out, a) {
+    out[0] = Math.floor(a[0]);
+    out[1] = Math.floor(a[1]);
+    return out;
+}
+
+},{}],"kB1An":[function(require,module,exports) {
+module.exports = ceil;
+/**
+ * Math.ceil the components of a vec2
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a vector to ceil
+ * @returns {vec2} out
+ */ function ceil(out, a) {
+    out[0] = Math.ceil(a[0]);
+    out[1] = Math.ceil(a[1]);
+    return out;
+}
+
+},{}],"ylSLB":[function(require,module,exports) {
+module.exports = round;
+/**
+ * Math.round the components of a vec2
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a vector to round
+ * @returns {vec2} out
+ */ function round(out, a) {
+    out[0] = Math.round(a[0]);
+    out[1] = Math.round(a[1]);
+    return out;
+}
+
+},{}],"ijYsa":[function(require,module,exports) {
+module.exports = scale;
+/**
+ * Scales a vec2 by a scalar number
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a the vector to scale
+ * @param {Number} b amount to scale the vector by
+ * @returns {vec2} out
+ */ function scale(out, a, b) {
+    out[0] = a[0] * b;
+    out[1] = a[1] * b;
+    return out;
+}
+
+},{}],"3Cioq":[function(require,module,exports) {
+module.exports = scaleAndAdd;
+/**
+ * Adds two vec2's after scaling the second operand by a scalar value
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a the first operand
+ * @param {vec2} b the second operand
+ * @param {Number} scale the amount to scale b by before adding
+ * @returns {vec2} out
+ */ function scaleAndAdd(out, a, b, scale) {
+    out[0] = a[0] + b[0] * scale;
+    out[1] = a[1] + b[1] * scale;
+    return out;
+}
+
+},{}],"7Ui9e":[function(require,module,exports) {
+module.exports = distance;
+/**
+ * Calculates the euclidian distance between two vec2's
+ *
+ * @param {vec2} a the first operand
+ * @param {vec2} b the second operand
+ * @returns {Number} distance between a and b
+ */ function distance(a, b) {
+    var x = b[0] - a[0], y = b[1] - a[1];
+    return Math.sqrt(x * x + y * y);
+}
+
+},{}],"1ovmd":[function(require,module,exports) {
+module.exports = require("./distance");
+
+},{"./distance":"7Ui9e"}],"4hBLD":[function(require,module,exports) {
+module.exports = squaredDistance;
+/**
+ * Calculates the squared euclidian distance between two vec2's
+ *
+ * @param {vec2} a the first operand
+ * @param {vec2} b the second operand
+ * @returns {Number} squared distance between a and b
+ */ function squaredDistance(a, b) {
+    var x = b[0] - a[0], y = b[1] - a[1];
+    return x * x + y * y;
+}
+
+},{}],"3qjLM":[function(require,module,exports) {
+module.exports = require("./squaredDistance");
+
+},{"./squaredDistance":"4hBLD"}],"jYOQD":[function(require,module,exports) {
+module.exports = length;
+/**
+ * Calculates the length of a vec2
+ *
+ * @param {vec2} a vector to calculate length of
+ * @returns {Number} length of a
+ */ function length(a) {
+    var x = a[0], y = a[1];
+    return Math.sqrt(x * x + y * y);
+}
+
+},{}],"7CBIr":[function(require,module,exports) {
+module.exports = require("./length");
+
+},{"./length":"jYOQD"}],"e1IZo":[function(require,module,exports) {
+module.exports = squaredLength;
+/**
+ * Calculates the squared length of a vec2
+ *
+ * @param {vec2} a vector to calculate squared length of
+ * @returns {Number} squared length of a
+ */ function squaredLength(a) {
+    var x = a[0], y = a[1];
+    return x * x + y * y;
+}
+
+},{}],"bKn7j":[function(require,module,exports) {
+module.exports = require("./squaredLength");
+
+},{"./squaredLength":"e1IZo"}],"78cQ9":[function(require,module,exports) {
+module.exports = negate;
+/**
+ * Negates the components of a vec2
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a vector to negate
+ * @returns {vec2} out
+ */ function negate(out, a) {
+    out[0] = -a[0];
+    out[1] = -a[1];
+    return out;
+}
+
+},{}],"5uPFR":[function(require,module,exports) {
+module.exports = normalize;
+/**
+ * Normalize a vec2
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a vector to normalize
+ * @returns {vec2} out
+ */ function normalize(out, a) {
+    var x = a[0], y = a[1];
+    var len = x * x + y * y;
+    if (len > 0) {
+        //TODO: evaluate use of glm_invsqrt here?
+        len = 1 / Math.sqrt(len);
+        out[0] = a[0] * len;
+        out[1] = a[1] * len;
+    }
+    return out;
+}
+
+},{}],"bwVNO":[function(require,module,exports) {
+module.exports = dot;
+/**
+ * Calculates the dot product of two vec2's
+ *
+ * @param {vec2} a the first operand
+ * @param {vec2} b the second operand
+ * @returns {Number} dot product of a and b
+ */ function dot(a, b) {
+    return a[0] * b[0] + a[1] * b[1];
+}
+
+},{}],"jJL5Q":[function(require,module,exports) {
+module.exports = cross;
+/**
+ * Computes the cross product of two vec2's
+ * Note that the cross product must by definition produce a 3D vector
+ *
+ * @param {vec3} out the receiving vector
+ * @param {vec2} a the first operand
+ * @param {vec2} b the second operand
+ * @returns {vec3} out
+ */ function cross(out, a, b) {
+    var z = a[0] * b[1] - a[1] * b[0];
+    out[0] = out[1] = 0;
+    out[2] = z;
+    return out;
+}
+
+},{}],"94IP9":[function(require,module,exports) {
+module.exports = lerp;
+/**
+ * Performs a linear interpolation between two vec2's
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a the first operand
+ * @param {vec2} b the second operand
+ * @param {Number} t interpolation amount between the two inputs
+ * @returns {vec2} out
+ */ function lerp(out, a, b, t) {
+    var ax = a[0], ay = a[1];
+    out[0] = ax + t * (b[0] - ax);
+    out[1] = ay + t * (b[1] - ay);
+    return out;
+}
+
+},{}],"erLFY":[function(require,module,exports) {
+module.exports = random;
+/**
+ * Generates a random vector with the given scale
+ *
+ * @param {vec2} out the receiving vector
+ * @param {Number} [scale] Length of the resulting vector. If ommitted, a unit vector will be returned
+ * @returns {vec2} out
+ */ function random(out, scale) {
+    scale = scale || 1.0;
+    var r = Math.random() * 2.0 * Math.PI;
+    out[0] = Math.cos(r) * scale;
+    out[1] = Math.sin(r) * scale;
+    return out;
+}
+
+},{}],"krmPX":[function(require,module,exports) {
+module.exports = transformMat2;
+/**
+ * Transforms the vec2 with a mat2
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a the vector to transform
+ * @param {mat2} m matrix to transform with
+ * @returns {vec2} out
+ */ function transformMat2(out, a, m) {
+    var x = a[0], y = a[1];
+    out[0] = m[0] * x + m[2] * y;
+    out[1] = m[1] * x + m[3] * y;
+    return out;
+}
+
+},{}],"5gyTg":[function(require,module,exports) {
+module.exports = transformMat2d;
+/**
+ * Transforms the vec2 with a mat2d
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a the vector to transform
+ * @param {mat2d} m matrix to transform with
+ * @returns {vec2} out
+ */ function transformMat2d(out, a, m) {
+    var x = a[0], y = a[1];
+    out[0] = m[0] * x + m[2] * y + m[4];
+    out[1] = m[1] * x + m[3] * y + m[5];
+    return out;
+}
+
+},{}],"65V1G":[function(require,module,exports) {
+module.exports = transformMat3;
+/**
+ * Transforms the vec2 with a mat3
+ * 3rd vector component is implicitly '1'
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a the vector to transform
+ * @param {mat3} m matrix to transform with
+ * @returns {vec2} out
+ */ function transformMat3(out, a, m) {
+    var x = a[0], y = a[1];
+    out[0] = m[0] * x + m[3] * y + m[6];
+    out[1] = m[1] * x + m[4] * y + m[7];
+    return out;
+}
+
+},{}],"dP164":[function(require,module,exports) {
+module.exports = transformMat4;
+/**
+ * Transforms the vec2 with a mat4
+ * 3rd vector component is implicitly '0'
+ * 4th vector component is implicitly '1'
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a the vector to transform
+ * @param {mat4} m matrix to transform with
+ * @returns {vec2} out
+ */ function transformMat4(out, a, m) {
+    var x = a[0], y = a[1];
+    out[0] = m[0] * x + m[4] * y + m[12];
+    out[1] = m[1] * x + m[5] * y + m[13];
+    return out;
+}
+
+},{}],"2VzZZ":[function(require,module,exports) {
+module.exports = forEach;
+var vec = require("./create")();
+/**
+ * Perform some operation over an array of vec2s.
+ *
+ * @param {Array} a the array of vectors to iterate over
+ * @param {Number} stride Number of elements between the start of each vec2. If 0 assumes tightly packed
+ * @param {Number} offset Number of elements to skip at the beginning of the array
+ * @param {Number} count Number of vec2s to iterate over. If 0 iterates over entire array
+ * @param {Function} fn Function to call for each vector in the array
+ * @param {Object} [arg] additional argument to pass to fn
+ * @returns {Array} a
+ * @function
+ */ function forEach(a, stride, offset, count, fn, arg) {
+    var i, l;
+    if (!stride) stride = 2;
+    if (!offset) offset = 0;
+    if (count) l = Math.min(count * stride + offset, a.length);
+    else l = a.length;
+    for(i = offset; i < l; i += stride){
+        vec[0] = a[i];
+        vec[1] = a[i + 1];
+        fn(vec, vec, arg);
+        a[i] = vec[0];
+        a[i + 1] = vec[1];
+    }
+    return a;
+}
+
+},{"./create":"2vq2Z"}],"cs7tR":[function(require,module,exports) {
+module.exports = limit;
+/**
+ * Limit the magnitude of this vector to the value used for the `max`
+ * parameter.
+ *
+ * @param  {vec2} the vector to limit
+ * @param  {Number} max the maximum magnitude for the vector
+ * @returns {vec2} out
+ */ function limit(out, a, max) {
+    var mSq = a[0] * a[0] + a[1] * a[1];
+    if (mSq > max * max) {
+        var n = Math.sqrt(mSq);
+        out[0] = a[0] / n * max;
+        out[1] = a[1] / n * max;
+    } else {
+        out[0] = a[0];
+        out[1] = a[1];
+    }
+    return out;
+}
+
+},{}],"1gUgL":[function(require,module,exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.drawPath = void 0;
+exports.createCanvas = exports.drawPath = exports.drawCircle = void 0;
+/**
+ *
+ * @param ctx
+ * @param pt [x, y]
+ * @param diam diameter
+ */ const drawCircle = (ctx, pt, diam)=>{
+    ctx.beginPath();
+    ctx.arc(pt[0], pt[1], diam * 0.5, 0, Math.PI * 2);
+};
+exports.drawCircle = drawCircle;
 /**
  * draw a 2d path. need to manually stroke/fill afterwards.
  * @param ctx canvas context 2d
@@ -2236,6 +1734,16 @@ exports.drawPath = void 0;
     if (close) ctx.closePath();
 };
 exports.drawPath = drawPath;
+// TODO
+// - respond to device pixel ratio
+const createCanvas = ({ width , height ,  })=>{
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    document.body.appendChild(canvas);
+    return canvas;
+};
+exports.createCanvas = createCanvas;
 
 },{}]},["jTpY0","98uA4"], "98uA4", "parcelRequire0536")
 
