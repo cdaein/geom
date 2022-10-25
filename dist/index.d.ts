@@ -56,6 +56,7 @@ export declare const getPathLength: (path: Pts) => number;
  * @returns path
  */
 export declare const extrudePath: (path: Pts, numPointsToExtrude: number, offset: Pt, mode?: "start" | "end" | "both", shapeFunc?: () => Pts) => number[][];
+export declare const interpolateArray: (arrStart: number[], arrTarget: number[], t: number) => number[];
 /**
  * mix/lerp 2d number array. usually used for path data of [x, y]
  * @param pathStart array of [x, y] to start
@@ -64,16 +65,6 @@ export declare const extrudePath: (path: Pts, numPointsToExtrude: number, offset
  * @returns 2d array
  */
 export declare const interpolatePath: (pathStart: Pts, pathTarget: Pts, t: number) => number[][];
-/**
- * interpolates between two 1d array of any size. for now, numbers only.
- *
- * TODO: expand to take object, nested aray/ojbects. recursive.
- * @param arrStart array to start from
- * @param arrTarget array to interpolate to
- * @param t 0..1
- * @returns 1d array
- */
-export declare const interpolateArray: (arrStart: number[], arrTarget: number[], t: number) => number[];
 /**
  * interpolate object with {string:number}. ie. {x:10}.
  * both objects must have same keys.
@@ -85,6 +76,7 @@ export declare const interpolateArray: (arrStart: number[], arrTarget: number[],
 export declare const interpolateObject: (objStart: GenericObject, objTarget: GenericObject, t: number) => GenericObject;
 /**
  * interpolate number, number[], number[][] or generic object
+ *
  * TODO:
  * - currently, string or boolean uses start value. (should it be t=0.5?)
  * - review TS implementation

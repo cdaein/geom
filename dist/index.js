@@ -3,8 +3,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.combinePath = exports.calcTByLength = exports.scalePath = exports.scalePoint = exports.reflectPath = exports.reflectPoint = exports.projectPointOnLine = exports.interpolate = exports.interpolateObject = exports.interpolateArray = exports.interpolatePath = exports.extrudePath = exports.getPathLength = exports.distSq = exports.dist = exports.createShapeFunc = exports.blendPath = void 0;
+exports.combinePath = exports.calcTByLength = exports.scalePath = exports.scalePoint = exports.reflectPath = exports.reflectPoint = exports.projectPointOnLine = exports.interpolate = exports.interpolateObject = exports.interpolatePath = exports.interpolateArray = exports.extrudePath = exports.getPathLength = exports.distSq = exports.dist = exports.createShapeFunc = exports.blendPath = void 0;
 const math_1 = require("@daeinc/math");
+const array_1 = require("@daeinc/array");
 const gl_vec2_1 = __importDefault(require("gl-vec2"));
 /**
  * generates an array of paths (excl. original 2 paths)
@@ -122,6 +123,7 @@ const extrudePath = (path, numPointsToExtrude, offset, mode = "end", shapeFunc) 
     return clone;
 };
 exports.extrudePath = extrudePath;
+exports.interpolateArray = array_1.interpolateArray; // REVIEW: hmm...
 /**
  * mix/lerp 2d number array. usually used for path data of [x, y]
  * @param pathStart array of [x, y] to start
@@ -145,27 +147,6 @@ const interpolatePath = (pathStart, pathTarget, t) => {
 };
 exports.interpolatePath = interpolatePath;
 /**
- * interpolates between two 1d array of any size. for now, numbers only.
- *
- * TODO: expand to take object, nested aray/ojbects. recursive.
- * @param arrStart array to start from
- * @param arrTarget array to interpolate to
- * @param t 0..1
- * @returns 1d array
- */
-const interpolateArray = (arrStart, arrTarget, t) => {
-    if (arrStart.length === 0 || arrTarget.length === 0)
-        throw new Error("interpolateArray(): arrays cannot be empty");
-    if (arrStart.length !== arrTarget.length)
-        throw new Error("interpolateArray(): length must be same");
-    return Array(arrStart.length)
-        .fill(0)
-        .map((_, i) => {
-        return (0, math_1.mix)(arrStart[i], arrTarget[i], t);
-    });
-};
-exports.interpolateArray = interpolateArray;
-/**
  * interpolate object with {string:number}. ie. {x:10}.
  * both objects must have same keys.
  * @param objStart object to start from
@@ -187,6 +168,7 @@ const interpolateObject = (objStart, objTarget, t) => {
 exports.interpolateObject = interpolateObject;
 /**
  * interpolate number, number[], number[][] or generic object
+ *
  * TODO:
  * - currently, string or boolean uses start value. (should it be t=0.5?)
  * - review TS implementation
