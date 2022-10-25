@@ -19,6 +19,7 @@
   "author": "Daeinc",
   "license": "MIT",
   "dependencies": {
+    "@daeinc/array": "^0.2.0",
     "@daeinc/math": "^0.2.0",
     "gl-vec2": "^1.3.0"
   },

@@ -1,4 +1,5 @@
 import { mix, reflect } from "@daeinc/math";
+import { interpolateArray as importedInterpolateArray } from "@daeinc/array";
 import vec2 from "gl-vec2";
 
 // not decided on whether to use custom tuple type
@@ -141,6 +142,8 @@ export const extrudePath = (
   return clone;
 };
 
+export const interpolateArray = importedInterpolateArray; // REVIEW: hmm...
+
 /**
  * mix/lerp 2d number array. usually used for path data of [x, y]
  * @param pathStart array of [x, y] to start
@@ -160,31 +163,6 @@ export const interpolatePath = (pathStart: Pts, pathTarget: Pts, t: number) => {
         mix(pathStart[i][0], pathTarget[i][0], t),
         mix(pathStart[i][1], pathTarget[i][1], t),
       ];
-    });
-};
-
-/**
- * interpolates between two 1d array of any size. for now, numbers only.
- *
- * TODO: expand to take object, nested aray/ojbects. recursive.
- * @param arrStart array to start from
- * @param arrTarget array to interpolate to
- * @param t 0..1
- * @returns 1d array
- */
-export const interpolateArray = (
-  arrStart: number[],
-  arrTarget: number[],
-  t: number
-) => {
-  if (arrStart.length === 0 || arrTarget.length === 0)
-    throw new Error("interpolateArray(): arrays cannot be empty");
-  if (arrStart.length !== arrTarget.length)
-    throw new Error("interpolateArray(): length must be same");
-  return Array(arrStart.length)
-    .fill(0)
-    .map((_, i) => {
-      return mix(arrStart[i], arrTarget[i], t);
     });
 };
 
@@ -214,6 +192,7 @@ export const interpolateObject = (
 
 /**
  * interpolate number, number[], number[][] or generic object
+ *
  * TODO:
  * - currently, string or boolean uses start value. (should it be t=0.5?)
  * - review TS implementation
