@@ -1,5 +1,9 @@
 # Changelog
 
+## `0.2.2`
+
+updated readme info.
+
 ## `0.2.0`
 
 `interpolateArray()` is now moved to and imported from `@daeinc/array`
