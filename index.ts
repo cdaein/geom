@@ -72,7 +72,7 @@ export const distSq = (pt1: Pt, pt2: Pt): number => {
 };
 
 /**
- * generate extra points needed for quadratic bezier
+ * generate extra points for smooth hard corners of path
  *
  * TODO: test
  *
