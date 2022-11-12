@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.combinePath = exports.calcTByLength = exports.scalePath = exports.scalePoint = exports.reflectPath = exports.reflectPoint = exports.projectPointOnLine = exports.interpolate = exports.interpolateObject = exports.interpolatePath = exports.interpolateArray = exports.extrudePath = exports.getPathLength = exports.distSq = exports.dist = exports.createShapeFunc = exports.blendPath = void 0;
+exports.combinePath = exports.calcTByLength = exports.scalePath = exports.scalePoint = exports.reflectPath = exports.reflectPoint = exports.projectPointOnLine = exports.interpolate = exports.interpolateObject = exports.interpolatePath = exports.interpolateArray = exports.extrudePath = exports.getPathLength = exports.generateSmoothPath = exports.distSq = exports.dist = exports.createShapeFunc = exports.blendPath = void 0;
 const math_1 = require("@daeinc/math");
 const array_1 = require("@daeinc/array");
 const gl_vec2_1 = __importDefault(require("gl-vec2"));
@@ -63,6 +63,34 @@ const distSq = (pt1, pt2) => {
     return Math.pow(pt2[0] - pt1[0], 2) + Math.pow(pt2[1] - pt1[1], 2);
 };
 exports.distSq = distSq;
+/**
+ * generate extra points needed for quadratic bezier
+ *
+ * TODO: test
+ *
+ * @param pts point array
+ * @param smoothFactor how smooth
+ * @returns point array
+ */
+const generateSmoothPath = (pts, smoothFactor) => {
+    const smoothPoints = [];
+    smoothPoints.push(pts[0]);
+    for (let i = 0; i < pts.length - 1; i++) {
+        const a = pts[i];
+        const b = pts[i + 1];
+        const diff = gl_vec2_1.default.sub([], b, a);
+        const diffScaled1 = gl_vec2_1.default.mul([], diff, [smoothFactor, smoothFactor]);
+        const mid1 = gl_vec2_1.default.add([], a, diffScaled1);
+        const diffScaled2 = gl_vec2_1.default.mul([], diff, [
+            1 - smoothFactor,
+            1 - smoothFactor,
+        ]);
+        const mid2 = gl_vec2_1.default.add([], a, diffScaled2);
+        smoothPoints.push(mid1, mid2, b);
+    }
+    return smoothPoints;
+};
+exports.generateSmoothPath = generateSmoothPath;
 /**
  * take an array of points and return total length of path
  * @param path array of [ x, y ] points

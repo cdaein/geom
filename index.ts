@@ -72,6 +72,34 @@ export const distSq = (pt1: Pt, pt2: Pt): number => {
 };
 
 /**
+ * generate extra points needed for quadratic bezier
+ *
+ * TODO: test
+ *
+ * @param pts point array
+ * @param smoothFactor how smooth
+ * @returns point array
+ */
+export const generateSmoothPath = (pts: Pts, smoothFactor: number) => {
+  const smoothPoints = [];
+  smoothPoints.push(pts[0]);
+  for (let i = 0; i < pts.length - 1; i++) {
+    const a = pts[i];
+    const b = pts[i + 1];
+    const diff = vec2.sub([], b, a);
+    const diffScaled1 = vec2.mul([], diff, [smoothFactor, smoothFactor]);
+    const mid1 = vec2.add([], a, diffScaled1);
+    const diffScaled2 = vec2.mul([], diff, [
+      1 - smoothFactor,
+      1 - smoothFactor,
+    ]);
+    const mid2 = vec2.add([], a, diffScaled2);
+    smoothPoints.push(mid1, mid2, b);
+  }
+  return smoothPoints;
+};
+
+/**
  * take an array of points and return total length of path
  * @param path array of [ x, y ] points
  * @returns total length of path

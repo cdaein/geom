@@ -37,6 +37,16 @@ export declare const dist: (pt1: Pt, pt2: Pt) => number;
  */
 export declare const distSq: (pt1: Pt, pt2: Pt) => number;
 /**
+ * generate extra points needed for quadratic bezier
+ *
+ * TODO: test
+ *
+ * @param pts point array
+ * @param smoothFactor how smooth
+ * @returns point array
+ */
+export declare const generateSmoothPath: (pts: Pts, smoothFactor: number) => number[][];
+/**
  * take an array of points and return total length of path
  * @param path array of [ x, y ] points
  * @returns total length of path
