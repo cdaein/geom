@@ -1,6 +1,6 @@
 {
   "name": "@daeinc/geom",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Geometry utilities",
   "types": "./dist/index.d.ts",
   "main": "./dist/index.js",
