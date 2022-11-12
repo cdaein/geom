@@ -1,5 +1,9 @@
 # Changelog
 
+## `0.3.0`
+
+added `drawSmoothPath()`
+
 ## `0.2.2`
 
 updated readme info.
