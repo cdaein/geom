@@ -153,6 +153,10 @@ export const generateSmoothPath = (pts: Pts, smoothFactor: number) => {
 
 /**
  * take an array of points and return total length of path
+ *
+ * REVIEW:
+ * - which is better, this or using getSegmentLengths()?
+ *
  * @param path array of [ x, y ] points
  * @returns total length of path
  */
@@ -175,7 +179,7 @@ export const getPathLength = (path: Pts): number => {
  * @param pts array of points [ x, y ]
  * @returns array of segment lengths
  */
-export const getSegmentLengths = (pts: number[][]) => {
+export const getSegmentLengths = (pts: Pts) => {
   const result: number[] = [];
   for (let i = 0; i < pts.length - 1; i++) {
     const d = dist(pts[i], pts[i + 1]);

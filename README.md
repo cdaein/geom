@@ -37,10 +37,6 @@ const dist: (pt1: Pt, pt2: Pt) => number;
 
 const distSq: (pt1: Pt, pt2: Pt) => number;
 
-const generateSmoothPath: (pts: Pts, smoothFactor: number) => number[][];
-
-const getPathLength: (path: Pts) => number;
-
 const extrudePath: (
   path: Pts,
   numPointsToExtrude: number,
@@ -48,6 +44,12 @@ const extrudePath: (
   mode?: "start" | "end" | "both",
   shapeFunc?: () => Pts
 ) => number[][];
+
+const generateSmoothPath: (pts: Pts, smoothFactor: number) => number[][];
+
+const getPathLength: (path: Pts) => number;
+
+const getSegmentLengths: (pts: Pts) => number[];
 
 const interpolateArray: (
   arrStart: number[],

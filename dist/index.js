@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.combinePath = exports.calcTByLength = exports.scalePath = exports.scalePoint = exports.reflectPath = exports.reflectPoint = exports.projectPointOnLine = exports.interpolate = exports.interpolateObject = exports.interpolatePath = exports.interpolateArray = exports.extrudePath = exports.getPathLength = exports.generateSmoothPath = exports.distSq = exports.dist = exports.createShapeFunc = exports.blendPath = void 0;
+exports.combinePath = exports.calcTByLength = exports.scalePath = exports.scalePoint = exports.reflectPath = exports.reflectPoint = exports.projectPointOnLine = exports.interpolate = exports.interpolateObject = exports.interpolatePath = exports.interpolateArray = exports.getSegmentLengths = exports.getPathLength = exports.generateSmoothPath = exports.extrudePath = exports.distSq = exports.dist = exports.createShapeFunc = exports.blendPath = void 0;
 const math_1 = require("@daeinc/math");
 const array_1 = require("@daeinc/array");
 const gl_vec2_1 = __importDefault(require("gl-vec2"));
@@ -64,51 +64,6 @@ const distSq = (pt1, pt2) => {
 };
 exports.distSq = distSq;
 /**
- * generate extra points for smooth hard corners of path
- *
- * TODO: test
- *
- * @param pts point array
- * @param smoothFactor how smooth
- * @returns point array
- */
-const generateSmoothPath = (pts, smoothFactor) => {
-    const smoothPoints = [];
-    smoothPoints.push(pts[0]);
-    for (let i = 0; i < pts.length - 1; i++) {
-        const a = pts[i];
-        const b = pts[i + 1];
-        const diff = gl_vec2_1.default.sub([], b, a);
-        const diffScaled1 = gl_vec2_1.default.mul([], diff, [smoothFactor, smoothFactor]);
-        const mid1 = gl_vec2_1.default.add([], a, diffScaled1);
-        const diffScaled2 = gl_vec2_1.default.mul([], diff, [
-            1 - smoothFactor,
-            1 - smoothFactor,
-        ]);
-        const mid2 = gl_vec2_1.default.add([], a, diffScaled2);
-        smoothPoints.push(mid1, mid2, b);
-    }
-    return smoothPoints;
-};
-exports.generateSmoothPath = generateSmoothPath;
-/**
- * take an array of points and return total length of path
- * @param path array of [ x, y ] points
- * @returns total length of path
- */
-const getPathLength = (path) => {
-    return path.reduce((totalLen, pt, i, arr) => {
-        if (arr.length < 2)
-            return 0; // handle single point length
-        if (i === arr.length - 1)
-            return totalLen; // skip last one (no i+1 there)
-        return (totalLen +
-            Math.sqrt(Math.pow(arr[i + 1][0] - arr[i][0], 2) +
-                Math.pow(arr[i + 1][1] - arr[i][1], 2)));
-    }, 0);
-};
-exports.getPathLength = getPathLength;
-/**
  * extrude path in 2d space
  *
  * TODO:
@@ -151,6 +106,69 @@ const extrudePath = (path, numPointsToExtrude, offset, mode = "end", shapeFunc) 
     return clone;
 };
 exports.extrudePath = extrudePath;
+/**
+ * generate extra points for smooth hard corners of path
+ *
+ * TODO: test
+ *
+ * @param pts point array
+ * @param smoothFactor how smooth
+ * @returns point array
+ */
+const generateSmoothPath = (pts, smoothFactor) => {
+    const smoothPoints = [];
+    smoothPoints.push(pts[0]);
+    for (let i = 0; i < pts.length - 1; i++) {
+        const a = pts[i];
+        const b = pts[i + 1];
+        const diff = gl_vec2_1.default.sub([], b, a);
+        const diffScaled1 = gl_vec2_1.default.mul([], diff, [smoothFactor, smoothFactor]);
+        const mid1 = gl_vec2_1.default.add([], a, diffScaled1);
+        const diffScaled2 = gl_vec2_1.default.mul([], diff, [
+            1 - smoothFactor,
+            1 - smoothFactor,
+        ]);
+        const mid2 = gl_vec2_1.default.add([], a, diffScaled2);
+        smoothPoints.push(mid1, mid2, b);
+    }
+    return smoothPoints;
+};
+exports.generateSmoothPath = generateSmoothPath;
+/**
+ * take an array of points and return total length of path
+ *
+ * REVIEW:
+ * - which is better, this or using getSegmentLengths()?
+ *
+ * @param path array of [ x, y ] points
+ * @returns total length of path
+ */
+const getPathLength = (path) => {
+    return path.reduce((totalLen, pt, i, arr) => {
+        if (arr.length < 2)
+            return 0; // handle single point length
+        if (i === arr.length - 1)
+            return totalLen; // skip last one (no i+1 there)
+        return (totalLen +
+            Math.sqrt(Math.pow(arr[i + 1][0] - arr[i][0], 2) +
+                Math.pow(arr[i + 1][1] - arr[i][1], 2)));
+    }, 0);
+};
+exports.getPathLength = getPathLength;
+/**
+ * calculate each segment length(distance)
+ * @param pts array of points [ x, y ]
+ * @returns array of segment lengths
+ */
+const getSegmentLengths = (pts) => {
+    const result = [];
+    for (let i = 0; i < pts.length - 1; i++) {
+        const d = (0, exports.dist)(pts[i], pts[i + 1]);
+        result.push(d);
+    }
+    return result;
+};
+exports.getSegmentLengths = getSegmentLengths;
 exports.interpolateArray = array_1.interpolateArray; // REVIEW: hmm...
 /**
  * mix/lerp 2d number array. usually used for path data of [x, y]

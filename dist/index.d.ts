@@ -37,22 +37,6 @@ export declare const dist: (pt1: Pt, pt2: Pt) => number;
  */
 export declare const distSq: (pt1: Pt, pt2: Pt) => number;
 /**
- * generate extra points for smooth hard corners of path
- *
- * TODO: test
- *
- * @param pts point array
- * @param smoothFactor how smooth
- * @returns point array
- */
-export declare const generateSmoothPath: (pts: Pts, smoothFactor: number) => number[][];
-/**
- * take an array of points and return total length of path
- * @param path array of [ x, y ] points
- * @returns total length of path
- */
-export declare const getPathLength: (path: Pts) => number;
-/**
  * extrude path in 2d space
  *
  * TODO:
@@ -66,6 +50,32 @@ export declare const getPathLength: (path: Pts) => number;
  * @returns path
  */
 export declare const extrudePath: (path: Pts, numPointsToExtrude: number, offset: Pt, mode?: "start" | "end" | "both", shapeFunc?: () => Pts) => number[][];
+/**
+ * generate extra points for smooth hard corners of path
+ *
+ * TODO: test
+ *
+ * @param pts point array
+ * @param smoothFactor how smooth
+ * @returns point array
+ */
+export declare const generateSmoothPath: (pts: Pts, smoothFactor: number) => number[][];
+/**
+ * take an array of points and return total length of path
+ *
+ * REVIEW:
+ * - which is better, this or using getSegmentLengths()?
+ *
+ * @param path array of [ x, y ] points
+ * @returns total length of path
+ */
+export declare const getPathLength: (path: Pts) => number;
+/**
+ * calculate each segment length(distance)
+ * @param pts array of points [ x, y ]
+ * @returns array of segment lengths
+ */
+export declare const getSegmentLengths: (pts: Pts) => number[];
 export declare const interpolateArray: (arrStart: number[], arrTarget: number[], t: number) => number[];
 /**
  * mix/lerp 2d number array. usually used for path data of [x, y]
