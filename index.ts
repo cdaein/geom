@@ -72,53 +72,6 @@ export const distSq = (pt1: Pt, pt2: Pt): number => {
 };
 
 /**
- * generate extra points for smooth hard corners of path
- *
- * TODO: test
- *
- * @param pts point array
- * @param smoothFactor how smooth
- * @returns point array
- */
-export const generateSmoothPath = (pts: Pts, smoothFactor: number) => {
-  const smoothPoints = [];
-  smoothPoints.push(pts[0]);
-  for (let i = 0; i < pts.length - 1; i++) {
-    const a = pts[i];
-    const b = pts[i + 1];
-    const diff = vec2.sub([], b, a);
-    const diffScaled1 = vec2.mul([], diff, [smoothFactor, smoothFactor]);
-    const mid1 = vec2.add([], a, diffScaled1);
-    const diffScaled2 = vec2.mul([], diff, [
-      1 - smoothFactor,
-      1 - smoothFactor,
-    ]);
-    const mid2 = vec2.add([], a, diffScaled2);
-    smoothPoints.push(mid1, mid2, b);
-  }
-  return smoothPoints;
-};
-
-/**
- * take an array of points and return total length of path
- * @param path array of [ x, y ] points
- * @returns total length of path
- */
-export const getPathLength = (path: Pts): number => {
-  return path.reduce((totalLen, pt, i, arr) => {
-    if (arr.length < 2) return 0; // handle single point length
-    if (i === arr.length - 1) return totalLen; // skip last one (no i+1 there)
-    return (
-      totalLen +
-      Math.sqrt(
-        Math.pow(arr[i + 1][0] - arr[i][0], 2) +
-          Math.pow(arr[i + 1][1] - arr[i][1], 2)
-      )
-    );
-  }, 0);
-};
-
-/**
  * extrude path in 2d space
  *
  * TODO:
@@ -168,6 +121,67 @@ export const extrudePath = (
   }
 
   return clone;
+};
+
+/**
+ * generate extra points for smooth hard corners of path
+ *
+ * TODO: test
+ *
+ * @param pts point array
+ * @param smoothFactor how smooth
+ * @returns point array
+ */
+export const generateSmoothPath = (pts: Pts, smoothFactor: number) => {
+  const smoothPoints = [];
+  smoothPoints.push(pts[0]);
+  for (let i = 0; i < pts.length - 1; i++) {
+    const a = pts[i];
+    const b = pts[i + 1];
+    const diff = vec2.sub([], b, a);
+    const diffScaled1 = vec2.mul([], diff, [smoothFactor, smoothFactor]);
+    const mid1 = vec2.add([], a, diffScaled1);
+    const diffScaled2 = vec2.mul([], diff, [
+      1 - smoothFactor,
+      1 - smoothFactor,
+    ]);
+    const mid2 = vec2.add([], a, diffScaled2);
+    smoothPoints.push(mid1, mid2, b);
+  }
+  return smoothPoints;
+};
+
+/**
+ * take an array of points and return total length of path
+ * @param path array of [ x, y ] points
+ * @returns total length of path
+ */
+export const getPathLength = (path: Pts): number => {
+  return path.reduce((totalLen, pt, i, arr) => {
+    if (arr.length < 2) return 0; // handle single point length
+    if (i === arr.length - 1) return totalLen; // skip last one (no i+1 there)
+    return (
+      totalLen +
+      Math.sqrt(
+        Math.pow(arr[i + 1][0] - arr[i][0], 2) +
+          Math.pow(arr[i + 1][1] - arr[i][1], 2)
+      )
+    );
+  }, 0);
+};
+
+/**
+ * calculate each segment length(distance)
+ * @param pts array of points [ x, y ]
+ * @returns array of segment lengths
+ */
+export const getSegmentLengths = (pts: number[][]) => {
+  const result: number[] = [];
+  for (let i = 0; i < pts.length - 1; i++) {
+    const d = dist(pts[i], pts[i + 1]);
+    result.push(d);
+  }
+  return result;
 };
 
 export const interpolateArray = importedInterpolateArray; // REVIEW: hmm...

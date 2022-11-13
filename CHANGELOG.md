@@ -1,5 +1,10 @@
 # Changelog
 
+## `0.4.0`
+
+- reordered source code
+- added `getSegmentLengths()`
+
 ## `0.3.0`
 
 added `drawSmoothPath()`
