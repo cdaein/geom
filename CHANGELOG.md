@@ -1,5 +1,9 @@
 # Changelog
 
+## `0.5.0`
+
+- added `getAngleBetween()`
+
 ## `0.4.0`
 
 - reordered source code

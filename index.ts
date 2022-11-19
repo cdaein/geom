@@ -152,6 +152,19 @@ export const generateSmoothPath = (pts: Pts, smoothFactor: number) => {
 };
 
 /**
+ * atan2 gives angle between [-PI, PI]
+ *
+ * REVIEW: order or points matter, so what's the best way?
+ *
+ * @param pt1
+ * @param pt2
+ * @returns
+ */
+export const getAngleBetween = (pt1: number[], pt2: number[]) => {
+  return Math.atan2(pt2[1] - pt1[1], pt2[0] - pt1[0]);
+};
+
+/**
  * take an array of points and return total length of path
  *
  * REVIEW:
