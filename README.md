@@ -92,7 +92,7 @@ Generates extra points for smooth corners of path. Use with `drawSmoothPath()` f
 const getAngleBetween: (pt1: number[], pt2: number[]) => number;
 ```
 
-Get angle between two points using `Math.atan2()`. `pt2 - pt1` is the order of subtraction.
+Get angle between two points using `Math.atan2()`. Return value is between -pi and pi. `pt2 - pt1` is the order of subtraction.
 
 ### getPathLength
 
@@ -101,6 +101,14 @@ const getPathLength: (path: Pts) => number;
 ```
 
 Returns the total length of path
+
+### getPositiveAngleBetween
+
+```ts
+const getPositiveAngleBetween: (pt1: number[], pt2: number[]) => number;
+```
+
+Return value is between 0 and 2pi.
 
 ### getSegmentLengths
 
@@ -164,7 +172,7 @@ const projectPointOnLine: (pt: Pt, line: Pts) => Pt;
 
 Projects a point on a line.
 
-## reflectPoint
+### reflectPoint
 
 ```ts
 const reflectPoint: (pt: Pt, axis: Pt | Pts) => Pt;
