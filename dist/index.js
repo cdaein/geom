@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.combinePath = exports.calcTByLength = exports.scalePath = exports.scalePoint = exports.reflectPath = exports.reflectPoint = exports.projectPointOnLine = exports.interpolate = exports.interpolateObject = exports.interpolatePath = exports.interpolateArray = exports.getSegmentLengths = exports.getPathLength = exports.getAngleBetween = exports.generateSmoothPath = exports.extrudePath = exports.distSq = exports.dist = exports.createShapeFunc = exports.blendPath = void 0;
+exports.combinePath = exports.calcTByLength = exports.scalePath = exports.scalePoint = exports.reflectPath = exports.reflectPoint = exports.projectPointOnLine = exports.interpolate = exports.interpolateObject = exports.interpolatePath = exports.interpolateArray = exports.getSegmentLengths = exports.getPositiveAngleBetween = exports.getPathLength = exports.getAngleBetween = exports.generateSmoothPath = exports.extrudePath = exports.distSq = exports.dist = exports.createShapeFunc = exports.blendPath = void 0;
 const math_1 = require("@daeinc/math");
 const array_1 = require("@daeinc/array");
 const gl_vec2_1 = __importDefault(require("gl-vec2"));
@@ -135,13 +135,13 @@ const generateSmoothPath = (pts, smoothFactor) => {
 };
 exports.generateSmoothPath = generateSmoothPath;
 /**
- * atan2 gives angle between [-PI, PI]
+ * atan2() gives angle between [-PI, PI]
  *
  * REVIEW: order or points matter, so what's the best way?
  *
  * @param pt1
  * @param pt2
- * @returns
+ * @returns angle between [-PI, PI]
  */
 const getAngleBetween = (pt1, pt2) => {
     return Math.atan2(pt2[1] - pt1[1], pt2[0] - pt1[0]);
@@ -168,6 +168,17 @@ const getPathLength = (path) => {
     }, 0);
 };
 exports.getPathLength = getPathLength;
+/**
+ * converts angle [-pi, pi] to [0, 2pi)
+ * @param pt1
+ * @param pt2
+ * @returns angle between [0, TWO_PI]
+ */
+const getPositiveAngleBetween = (pt1, pt2) => {
+    const angle = (0, exports.getAngleBetween)(pt1, pt2);
+    return angle >= 0 ? angle : angle + math_1.TWO_PI;
+};
+exports.getPositiveAngleBetween = getPositiveAngleBetween;
 /**
  * calculate each segment length(distance)
  * @param pts array of points [ x, y ]

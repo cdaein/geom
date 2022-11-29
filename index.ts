@@ -1,4 +1,4 @@
-import { mix, reflect } from "@daeinc/math";
+import { mix, reflect, TWO_PI } from "@daeinc/math";
 import { interpolateArray as importedInterpolateArray } from "@daeinc/array";
 import vec2 from "gl-vec2";
 
@@ -152,13 +152,13 @@ export const generateSmoothPath = (pts: Pts, smoothFactor: number) => {
 };
 
 /**
- * atan2 gives angle between [-PI, PI]
+ * atan2() gives angle between [-PI, PI]
  *
  * REVIEW: order or points matter, so what's the best way?
  *
  * @param pt1
  * @param pt2
- * @returns
+ * @returns angle between [-PI, PI]
  */
 export const getAngleBetween = (pt1: number[], pt2: number[]) => {
   return Math.atan2(pt2[1] - pt1[1], pt2[0] - pt1[0]);
@@ -185,6 +185,17 @@ export const getPathLength = (path: Pts): number => {
       )
     );
   }, 0);
+};
+
+/**
+ * converts angle [-pi, pi] to [0, 2pi)
+ * @param pt1
+ * @param pt2
+ * @returns angle between [0, TWO_PI]
+ */
+export const getPositiveAngleBetween = (pt1: number[], pt2: number[]) => {
+  const angle = getAngleBetween(pt1, pt2);
+  return angle >= 0 ? angle : angle + TWO_PI;
 };
 
 /**

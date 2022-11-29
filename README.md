@@ -62,7 +62,7 @@ Returns a distance between two points.
 const distSq: (pt1: Pt, pt2: Pt) => number;
 ```
 
-Returns a squared distance between two points.
+Returns a squared distance between two points. There's another version in `@daeinc/math` that takes `number` arguments.
 
 ### extrudePath
 

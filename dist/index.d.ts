@@ -61,13 +61,13 @@ export declare const extrudePath: (path: Pts, numPointsToExtrude: number, offset
  */
 export declare const generateSmoothPath: (pts: Pts, smoothFactor: number) => number[][];
 /**
- * atan2 gives angle between [-PI, PI]
+ * atan2() gives angle between [-PI, PI]
  *
  * REVIEW: order or points matter, so what's the best way?
  *
  * @param pt1
  * @param pt2
- * @returns
+ * @returns angle between [-PI, PI]
  */
 export declare const getAngleBetween: (pt1: number[], pt2: number[]) => number;
 /**
@@ -80,6 +80,13 @@ export declare const getAngleBetween: (pt1: number[], pt2: number[]) => number;
  * @returns total length of path
  */
 export declare const getPathLength: (path: Pts) => number;
+/**
+ * converts angle [-pi, pi] to [0, 2pi)
+ * @param pt1
+ * @param pt2
+ * @returns angle between [0, TWO_PI]
+ */
+export declare const getPositiveAngleBetween: (pt1: number[], pt2: number[]) => number;
 /**
  * calculate each segment length(distance)
  * @param pts array of points [ x, y ]
