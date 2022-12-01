@@ -1,5 +1,13 @@
 # Changelog
 
+## `0.7.0`
+
+- added `rotatePoint()`
+
+## `0.6.0`
+
+- added `getPositiveAngleBetween()`
+
 ## `0.5.0`
 
 - added `getAngleBetween()`
