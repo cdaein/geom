@@ -146,6 +146,15 @@ export declare const reflectPoint: (pt: Pt, axis: Pt | Pts) => Pt;
  */
 export declare const reflectPath: (pts: Pts, axis: Pt | Pts) => Pts;
 /**
+ * TODO: haven't tested it yet
+ * REVIEW: need to round the result?
+ * @param pt
+ * @param angle
+ * @param anchor
+ * @returns
+ */
+export declare const rotatePoint: (pt: Pt, angle: number, anchor?: number[], precision?: number) => number[];
+/**
  * scale a single point
  * @param pt a point [x, y]
  * @param size [width, height] to scale to

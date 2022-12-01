@@ -1,4 +1,4 @@
-import { mix, reflect, TWO_PI } from "@daeinc/math";
+import { mix, reflect, roundF, TWO_PI } from "@daeinc/math";
 import { interpolateArray as importedInterpolateArray } from "@daeinc/array";
 import vec2 from "gl-vec2";
 
@@ -361,6 +361,25 @@ export const reflectPoint = (pt: Pt, axis: Pt | Pts): Pt => {
  */
 export const reflectPath = (pts: Pts, axis: Pt | Pts): Pts => {
   return pts.map((pt) => reflectPoint(pt, axis));
+};
+
+/**
+ * TODO: haven't tested "anchor" yet
+ * REVIEW: need to round the result?
+ * @param pt
+ * @param angle
+ * @param anchor
+ * @returns
+ */
+export const rotatePoint = (
+  pt: Pt,
+  angle: number,
+  anchor = [0, 0],
+  precision = 5
+) => {
+  const x = anchor[0] + Math.cos(angle) * pt[0];
+  const y = anchor[1] + Math.sin(angle) * pt[1];
+  return [roundF(x, precision), roundF(y, precision)];
 };
 
 /**

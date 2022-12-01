@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.combinePath = exports.calcTByLength = exports.scalePath = exports.scalePoint = exports.reflectPath = exports.reflectPoint = exports.projectPointOnLine = exports.interpolate = exports.interpolateObject = exports.interpolatePath = exports.interpolateArray = exports.getSegmentLengths = exports.getPositiveAngleBetween = exports.getPathLength = exports.getAngleBetween = exports.generateSmoothPath = exports.extrudePath = exports.distSq = exports.dist = exports.createShapeFunc = exports.blendPath = void 0;
+exports.combinePath = exports.calcTByLength = exports.scalePath = exports.scalePoint = exports.rotatePoint = exports.reflectPath = exports.reflectPoint = exports.projectPointOnLine = exports.interpolate = exports.interpolateObject = exports.interpolatePath = exports.interpolateArray = exports.getSegmentLengths = exports.getPositiveAngleBetween = exports.getPathLength = exports.getAngleBetween = exports.generateSmoothPath = exports.extrudePath = exports.distSq = exports.dist = exports.createShapeFunc = exports.blendPath = void 0;
 const math_1 = require("@daeinc/math");
 const array_1 = require("@daeinc/array");
 const gl_vec2_1 = __importDefault(require("gl-vec2"));
@@ -330,6 +330,20 @@ const reflectPath = (pts, axis) => {
     return pts.map((pt) => (0, exports.reflectPoint)(pt, axis));
 };
 exports.reflectPath = reflectPath;
+/**
+ * TODO: haven't tested it yet
+ * REVIEW: need to round the result?
+ * @param pt
+ * @param angle
+ * @param anchor
+ * @returns
+ */
+const rotatePoint = (pt, angle, anchor = [0, 0], precision = 5) => {
+    const x = anchor[0] + Math.cos(angle) * pt[0];
+    const y = anchor[1] + Math.sin(angle) * pt[1];
+    return [(0, math_1.roundF)(x, precision), (0, math_1.roundF)(y, precision)];
+};
+exports.rotatePoint = rotatePoint;
 /**
  * scale a single point
  * @param pt a point [x, y]
