@@ -160,7 +160,7 @@ export const generateSmoothPath = (pts: Pts, smoothFactor: number) => {
  * @param pt2
  * @returns angle between [-PI, PI]
  */
-export const getAngleBetween = (pt1: number[], pt2: number[]) => {
+export const getAngleBetween = (pt1: Pt, pt2: Pt) => {
   return Math.atan2(pt2[1] - pt1[1], pt2[0] - pt1[0]);
 };
 
@@ -193,7 +193,7 @@ export const getPathLength = (path: Pts): number => {
  * @param pt2
  * @returns angle between [0, TWO_PI]
  */
-export const getPositiveAngleBetween = (pt1: number[], pt2: number[]) => {
+export const getPositiveAngleBetween = (pt1: Pt, pt2: Pt) => {
   const angle = getAngleBetween(pt1, pt2);
   return angle >= 0 ? angle : angle + TWO_PI;
 };

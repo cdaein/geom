@@ -69,7 +69,7 @@ export declare const generateSmoothPath: (pts: Pts, smoothFactor: number) => num
  * @param pt2
  * @returns angle between [-PI, PI]
  */
-export declare const getAngleBetween: (pt1: number[], pt2: number[]) => number;
+export declare const getAngleBetween: (pt1: Pt, pt2: Pt) => number;
 /**
  * take an array of points and return total length of path
  *
@@ -86,7 +86,7 @@ export declare const getPathLength: (path: Pts) => number;
  * @param pt2
  * @returns angle between [0, TWO_PI]
  */
-export declare const getPositiveAngleBetween: (pt1: number[], pt2: number[]) => number;
+export declare const getPositiveAngleBetween: (pt1: Pt, pt2: Pt) => number;
 /**
  * calculate each segment length(distance)
  * @param pts array of points [ x, y ]
