@@ -81,6 +81,12 @@ export declare const getAngleBetween: (pt1: Pt, pt2: Pt) => number;
  */
 export declare const getPathLength: (path: Pts) => number;
 /**
+ * squared version of getPathLength() for performance boost
+ * @param path array of [x, y] points
+ * @returns total squared length of path
+ */
+export declare const getPathLengthSq: (path: Pts) => number;
+/**
  * converts angle [-pi, pi] to [0, 2pi)
  * @param pt1
  * @param pt2
@@ -146,7 +152,7 @@ export declare const reflectPoint: (pt: Pt, axis: Pt | Pts) => Pt;
  */
 export declare const reflectPath: (pts: Pts, axis: Pt | Pts) => Pts;
 /**
- * TODO: haven't tested it yet
+ * TODO: haven't tested "anchor" yet
  * REVIEW: need to round the result?
  * @param pt
  * @param angle

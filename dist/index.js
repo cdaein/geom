@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.combinePath = exports.calcTByLength = exports.scalePath = exports.scalePoint = exports.rotatePoint = exports.reflectPath = exports.reflectPoint = exports.projectPointOnLine = exports.interpolate = exports.interpolateObject = exports.interpolatePath = exports.interpolateArray = exports.getSegmentLengths = exports.getPositiveAngleBetween = exports.getPathLength = exports.getAngleBetween = exports.generateSmoothPath = exports.extrudePath = exports.distSq = exports.dist = exports.createShapeFunc = exports.blendPath = void 0;
+exports.combinePath = exports.calcTByLength = exports.scalePath = exports.scalePoint = exports.rotatePoint = exports.reflectPath = exports.reflectPoint = exports.projectPointOnLine = exports.interpolate = exports.interpolateObject = exports.interpolatePath = exports.interpolateArray = exports.getSegmentLengths = exports.getPositiveAngleBetween = exports.getPathLengthSq = exports.getPathLength = exports.getAngleBetween = exports.generateSmoothPath = exports.extrudePath = exports.distSq = exports.dist = exports.createShapeFunc = exports.blendPath = void 0;
 const math_1 = require("@daeinc/math");
 const array_1 = require("@daeinc/array");
 const gl_vec2_1 = __importDefault(require("gl-vec2"));
@@ -169,6 +169,23 @@ const getPathLength = (path) => {
 };
 exports.getPathLength = getPathLength;
 /**
+ * squared version of getPathLength() for performance boost
+ * @param path array of [x, y] points
+ * @returns total squared length of path
+ */
+const getPathLengthSq = (path) => {
+    return path.reduce((totalLen, pt, i, arr) => {
+        if (arr.length < 2)
+            return 0; // handle single point length
+        if (i === arr.length - 1)
+            return totalLen; // skip last one (no i+1 there)
+        return (totalLen +
+            Math.pow(arr[i + 1][0] - arr[i][0], 2) +
+            Math.pow(arr[i + 1][1] - arr[i][1], 2));
+    }, 0);
+};
+exports.getPathLengthSq = getPathLengthSq;
+/**
  * converts angle [-pi, pi] to [0, 2pi)
  * @param pt1
  * @param pt2
@@ -331,7 +348,7 @@ const reflectPath = (pts, axis) => {
 };
 exports.reflectPath = reflectPath;
 /**
- * TODO: haven't tested it yet
+ * TODO: haven't tested "anchor" yet
  * REVIEW: need to round the result?
  * @param pt
  * @param angle

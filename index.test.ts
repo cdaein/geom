@@ -34,6 +34,21 @@ const normPts: Pts = [
   [1.0, 1.0],
 ];
 
+describe("getPathLength()", () => {
+  test("pts.length of 1 will return 0", () => {
+    expect(getPathLength([pts[0]])).toBe(0);
+    expect(getPathLength([pts[1]])).toBe(0);
+  });
+  test("pts.length of 2 will return line length", () => {
+    /* [0,0] to [20,20], length is sqrt(800) */
+    expect(getPathLength([pts[0], pts[1]])).toBeCloseTo(Math.sqrt(800));
+  });
+  test("pts.length of 3 or more returns total length", () => {
+    expect(getPathLength(pts)).toBeCloseTo(Math.sqrt(7200));
+    expect(getPathLength(pts)).toBeCloseTo(10 * Math.sqrt(72));
+  });
+});
+
 describe("scalePoint", () => {
   test("not normalized: scale at 1 (same as original)", () => {
     expect(scalePoint(pts[0], [1, 1])).toStrictEqual(pts[0]);
@@ -188,21 +203,6 @@ describe("projectPointOnLine()", () => {
   test("can project a point on a line", () => {
     // due to gl-vec2 TypedArray, can't compare as array.
     expect(projectPointOnLine(pt, line)).toEqual(Float32Array.from([50, 50]));
-  });
-});
-
-describe("getPathLength()", () => {
-  test("pts.length of 1 will return 0", () => {
-    expect(getPathLength([pts[0]])).toBe(0);
-    expect(getPathLength([pts[1]])).toBe(0);
-  });
-  test("pts.length of 2 will return line length", () => {
-    /* [0,0] to [20,20], length is sqrt(800) */
-    expect(getPathLength([pts[0], pts[1]])).toBeCloseTo(Math.sqrt(800));
-  });
-  test("pts.length of 3 or more returns total length", () => {
-    expect(getPathLength(pts)).toBeCloseTo(Math.sqrt(7200));
-    expect(getPathLength(pts)).toBeCloseTo(10 * Math.sqrt(72));
   });
 });
 
