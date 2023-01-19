@@ -1,6 +1,6 @@
-export declare type Pt = number[];
-export declare type Pts = number[][];
-export declare type GenericObject = Record<string, any>;
+export type Pt = number[];
+export type Pts = number[][];
+export type GenericObject = Record<string, any>;
 /**
  * generates an array of paths (excl. original 2 paths)
  *
@@ -80,12 +80,6 @@ export declare const getAngleBetween: (pt1: Pt, pt2: Pt) => number;
  * @returns total length of path
  */
 export declare const getPathLength: (path: Pts) => number;
-/**
- * squared version of getPathLength() for performance boost
- * @param path array of [x, y] points
- * @returns total squared length of path
- */
-export declare const getPathLengthSq: (path: Pts) => number;
 /**
  * converts angle [-pi, pi] to [0, 2pi)
  * @param pt1
