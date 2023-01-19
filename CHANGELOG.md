@@ -1,5 +1,9 @@
 # Changelog
 
+## `0.8.0`
+
+- updated build to `esnext`: due to `gl-vec2` dependency, it's not completely tree-sheakeable yet.
+
 ## `0.7.0`
 
 - added `rotatePoint()`
