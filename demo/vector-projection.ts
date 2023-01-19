@@ -1,4 +1,4 @@
-import { drawPath } from "@daeinc/canvas";
+import { drawPath } from "@daeinc/draw";
 import {
   projectPointOnLine,
   reflectPoint,

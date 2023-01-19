@@ -1,11 +1,14 @@
-import { createCanvas, drawPath, drawSmoothPath } from "@daeinc/canvas";
+import { createCanvas } from "@daeinc/canvas";
+import { drawPath, drawSmoothPath } from "@daeinc/draw";
 import { generateSmoothPath } from "../dist/index.js";
 import type { Pt, Pts } from "../dist/index";
 
 const width = 500;
 const height = 500;
-const canvas = createCanvas({ width, height });
-const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
+const { canvas, context: ctx } = createCanvas({ width, height }) as {
+  canvas: HTMLCanvasElement;
+  context: CanvasRenderingContext2D;
+};
 
 const path = [
   [50, 50],
