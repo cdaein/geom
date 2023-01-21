@@ -1,5 +1,10 @@
 # Changelog
 
+## `0.9.0`
+
+- updated testing from `jest` to `vitest`: support for ESM/TypeScript out of the box.
+- updated vector library from `gl-vec2` to `@thi.ng/vectors`: ESM/TypeScript support.
+
 ## `0.8.0`
 
 - updated build to `esnext`: due to `gl-vec2` dependency, it's not completely tree-sheakeable yet.
