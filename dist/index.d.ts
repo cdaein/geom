@@ -1,6 +1,6 @@
-export type Pt = number[];
-export type Pts = number[][];
-export type GenericObject = Record<string, any>;
+export declare type Pt = number[];
+export declare type Pts = number[][];
+export declare type GenericObject = Record<string, any>;
 /**
  * generates an array of paths (excl. original 2 paths)
  *
@@ -59,7 +59,7 @@ export declare const extrudePath: (path: Pts, numPointsToExtrude: number, offset
  * @param smoothFactor how smooth
  * @returns point array
  */
-export declare const generateSmoothPath: (pts: Pts, smoothFactor: number) => number[][];
+export declare const generateSmoothPath: (pts: Pts, smoothFactor: number) => import("@thi.ng/vectors").Vec[];
 /**
  * atan2() gives angle between [-PI, PI]
  *

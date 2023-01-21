@@ -12,7 +12,7 @@
   },
   "scripts": {
     "watch": "tsc --watch",
-    "test": "vitest watch --config ./vitest.config.ts",
+    "test": "vitest watch --config ./vitest.config.js",
     "demo": "parcel ./demo/index.html --dist-dir ./demo/build --no-source-maps --no-cache",
     "build": "tsc --build --clean && tsc --build"
   },
