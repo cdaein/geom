@@ -1,6 +1,14 @@
 import { mix, reflect, roundF, TWO_PI } from "@daeinc/math";
 import { interpolateArray as importedInterpolateArray } from "@daeinc/array";
-import { add, dot, fromValues, len, mul, normalize, sub } from "gl-vec2";
+import {
+  add2 as add,
+  dot2 as dot,
+  mag,
+  mul2 as mul,
+  sub2 as sub,
+  vec2,
+  normalize2 as normalize,
+} from "@thi.ng/vectors";
 
 // not decided on whether to use custom tuple type
 // export type Pt = [number, number, number?]; // a single point [x, y, z?]
@@ -312,17 +320,17 @@ export const interpolate = <T>(
  * @returns point on the line
  */
 export const projectPointOnLine = (pt: Pt, line: Pts): Pt => {
-  const ptVec = fromValues(pt[0] - line[1][0], pt[1] - line[1][1]);
-  const lineVec = fromValues(line[0][0] - line[1][0], line[0][1] - line[1][1]);
+  const ptVec = vec2(pt[0] - line[1][0], pt[1] - line[1][1]);
+  const lineVec = vec2(line[0][0] - line[1][0], line[0][1] - line[1][1]);
   const prod = dot(ptVec, lineVec);
-  const proj = prod / len(lineVec);
-  const projVec = fromValues(proj, proj);
+  const proj = prod / mag(lineVec);
+  const projVec = vec2(proj, proj);
 
   const result = normalize(lineVec, lineVec);
   mul(result, lineVec, projVec);
   add(result, result, line[1]);
 
-  return result;
+  return [result[0], result[1]];
 };
 
 /**
@@ -333,12 +341,12 @@ export const projectPointOnLine = (pt: Pt, line: Pts): Pt => {
  */
 export const reflectPoint = (pt: Pt, axis: Pt | Pts): Pt => {
   if (axis[0].constructor === Array) {
-    const projVec = fromValues(
+    const projVec = vec2(
       ...(projectPointOnLine(pt, axis as Pts) as [number, number])
     );
-    const distVec = sub([], fromValues(pt[0], pt[1]), projVec);
+    const distVec = sub([], vec2(pt[0], pt[1]), projVec);
     const reflVec = sub(projVec, projVec, distVec);
-    return reflVec;
+    return [reflVec[0], reflVec[1]];
   } else {
     return [
       reflect(pt[0], axis[0] as number),
