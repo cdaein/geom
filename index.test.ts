@@ -1,4 +1,5 @@
-import { describe, expect, test } from "@jest/globals";
+// import { describe, expect, test } from "@jest/globals";
+import { describe, expect, test } from "vitest";
 import {
   scalePoint,
   scalePath,
@@ -169,8 +170,8 @@ describe("reflectPoint()", () => {
     expect(reflectPoint([70, -30], [30, 20])).toStrictEqual([-10, 70]);
   });
   test("reflects on line axis", () => {
-    expect(reflectPoint([10, 10], [[0, 50], [100, 50]])).toEqual(Float32Array.from([10,90]));
-    expect(reflectPoint([30, 10], [[0, 0], [100, 100]])).toEqual(Float32Array.from([10, 30]));
+    expect(reflectPoint([10, 10], [[0, 50], [100, 50]])).toEqual([10,90]);
+    expect(reflectPoint([30, 10], [[0, 0], [100, 100]])).toEqual([10, 30]);
   });
 });
 
@@ -185,10 +186,10 @@ describe("reflectPath()", () => {
   test("reflects on line", () => {
     const pts = [[0,0], [20,20], [40,40], [60,60]];
     const refl = [[0, 100], [20, 80], [40, 60], [60, 40]];
-    expect(reflectPath(pts, [[0, 50], [100, 50]])[0]).toEqual(Float32Array.from(refl[0]));
-    expect(reflectPath(pts, [[0, 50], [100, 50]])[1]).toEqual(Float32Array.from(refl[1]));
-    expect(reflectPath(pts, [[0, 50], [100, 50]])[2]).toEqual(Float32Array.from(refl[2]));
-    expect(reflectPath(pts, [[0, 50], [100, 50]])[3]).toEqual(Float32Array.from(refl[3]));
+    expect(reflectPath(pts, [[0, 50], [100, 50]])[0]).toEqual(refl[0]);
+    expect(reflectPath(pts, [[0, 50], [100, 50]])[1]).toEqual(refl[1]);
+    expect(reflectPath(pts, [[0, 50], [100, 50]])[2]).toEqual(refl[2]);
+    expect(reflectPath(pts, [[0, 50], [100, 50]])[3]).toEqual(refl[3]);
   });
 });
 
@@ -202,7 +203,8 @@ describe("projectPointOnLine()", () => {
   });
   test("can project a point on a line", () => {
     // due to gl-vec2 TypedArray, can't compare as array.
-    expect(projectPointOnLine(pt, line)).toEqual(Float32Array.from([50, 50]));
+    expect(projectPointOnLine(pt, line)[0]).toBeCloseTo(50);
+    expect(projectPointOnLine(pt, line)[1]).toBeCloseTo(50);
   });
 });
 
