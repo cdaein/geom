@@ -1,6 +1,6 @@
 import { mix, reflect, roundF, TWO_PI } from "@daeinc/math";
 import { interpolateArray as importedInterpolateArray } from "@daeinc/array";
-import vec2 from "gl-vec2";
+import { add, dot, fromValues, len, mul, normalize, sub } from "gl-vec2";
 /**
  * generates an array of paths (excl. original 2 paths)
  *
@@ -110,14 +110,11 @@ export const generateSmoothPath = (pts, smoothFactor) => {
     for (let i = 0; i < pts.length - 1; i++) {
         const a = pts[i];
         const b = pts[i + 1];
-        const diff = vec2.sub([], b, a);
-        const diffScaled1 = vec2.mul([], diff, [smoothFactor, smoothFactor]);
-        const mid1 = vec2.add([], a, diffScaled1);
-        const diffScaled2 = vec2.mul([], diff, [
-            1 - smoothFactor,
-            1 - smoothFactor,
-        ]);
-        const mid2 = vec2.add([], a, diffScaled2);
+        const diff = sub([], b, a);
+        const diffScaled1 = mul([], diff, [smoothFactor, smoothFactor]);
+        const mid1 = add([], a, diffScaled1);
+        const diffScaled2 = mul([], diff, [1 - smoothFactor, 1 - smoothFactor]);
+        const mid2 = add([], a, diffScaled2);
         smoothPoints.push(mid1, mid2, b);
     }
     return smoothPoints;
@@ -269,14 +266,14 @@ start, target, t) => {
  * @returns point on the line
  */
 export const projectPointOnLine = (pt, line) => {
-    const ptVec = vec2.fromValues(pt[0] - line[1][0], pt[1] - line[1][1]);
-    const lineVec = vec2.fromValues(line[0][0] - line[1][0], line[0][1] - line[1][1]);
-    const prod = vec2.dot(ptVec, lineVec);
-    const proj = prod / vec2.len(lineVec);
-    const projVec = vec2.fromValues(proj, proj);
-    const result = vec2.normalize(lineVec, lineVec);
-    vec2.mul(result, lineVec, projVec);
-    vec2.add(result, result, line[1]);
+    const ptVec = fromValues(pt[0] - line[1][0], pt[1] - line[1][1]);
+    const lineVec = fromValues(line[0][0] - line[1][0], line[0][1] - line[1][1]);
+    const prod = dot(ptVec, lineVec);
+    const proj = prod / len(lineVec);
+    const projVec = fromValues(proj, proj);
+    const result = normalize(lineVec, lineVec);
+    mul(result, lineVec, projVec);
+    add(result, result, line[1]);
     return result;
 };
 /**
@@ -287,9 +284,9 @@ export const projectPointOnLine = (pt, line) => {
  */
 export const reflectPoint = (pt, axis) => {
     if (axis[0].constructor === Array) {
-        const projVec = vec2.fromValues(...projectPointOnLine(pt, axis));
-        const distVec = vec2.sub([], vec2.fromValues(pt[0], pt[1]), projVec);
-        const reflVec = vec2.sub(projVec, projVec, distVec);
+        const projVec = fromValues(...projectPointOnLine(pt, axis));
+        const distVec = sub([], fromValues(pt[0], pt[1]), projVec);
+        const reflVec = sub(projVec, projVec, distVec);
         return reflVec;
     }
     else {
