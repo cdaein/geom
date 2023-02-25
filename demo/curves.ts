@@ -1,11 +1,11 @@
 import { createCanvas } from "@daeinc/canvas";
-import { drawPath, drawSmoothPath } from "@daeinc/draw";
-import { generateSmoothPath } from "../dist/index.js";
-import type { Pt, Pts } from "../dist/index";
+import { drawPath } from "@daeinc/draw";
+// import { generateSmoothPath, drawSmoothPath } from "../dist/index.js";
+// import type { Pt, Pts } from "../dist/index";
 
 const width = 500;
 const height = 500;
-const { canvas, context: ctx } = createCanvas({ width, height }) as {
+const { context: ctx } = createCanvas({ width, height }) as {
   canvas: HTMLCanvasElement;
   context: CanvasRenderingContext2D;
 };
@@ -20,7 +20,7 @@ const path = [
   [80, 480],
 ];
 
-const pathSmooth = generateSmoothPath(path, 0.3);
+// const pathSmooth = generateSmoothPath(path, 0.3);
 
 // console.log(path);
 // console.log(pathSmooth);
@@ -32,7 +32,7 @@ drawPath(ctx, path);
 ctx.strokeStyle = `yellow`;
 ctx.stroke();
 
-drawSmoothPath(ctx, pathSmooth);
-ctx.strokeStyle = `white`;
-ctx.lineWidth = 8;
-ctx.stroke();
+// drawSmoothPath(ctx, pathSmooth);
+// ctx.strokeStyle = `white`;
+// ctx.lineWidth = 8;
+// ctx.stroke();

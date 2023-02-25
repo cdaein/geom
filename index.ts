@@ -33,8 +33,8 @@ export type GenericObject = Record<string, any>;
 export const blendPath = (
   path1: Pts,
   path2: Pts,
-  numBlends: number,
-  guidePath?: Pts
+  numBlends: number
+  // guidePath?: Pts
 ) => {
   return Array(numBlends)
     .fill([])
@@ -96,8 +96,8 @@ export const extrudePath = (
   path: Pts,
   numPointsToExtrude: number,
   offset: Pt,
-  mode: "start" | "end" | "both" = "end",
-  shapeFunc?: () => Pts
+  mode: "start" | "end" | "both" = "end"
+  // shapeFunc?: () => Pts
 ) => {
   if (numPointsToExtrude > path.length) {
     throw new Error(
@@ -179,7 +179,7 @@ export const getAngleBetween = (pt1: Pt, pt2: Pt) => {
  * @returns total length of path
  */
 export const getPathLength = (path: Pts): number => {
-  return path.reduce((totalLen, pt, i, arr) => {
+  return path.reduce((totalLen, _pt, i, arr) => {
     if (arr.length < 2) return 0; // handle single point length
     if (i === arr.length - 1) return totalLen; // skip last one (no i+1 there)
     return (
@@ -221,29 +221,38 @@ export const interpolateArray = importedInterpolateArray; // REVIEW: hmm...
 
 /**
  * mix/lerp 2d number array. usually used for path data of [x, y]
+ *
  * @param pathStart array of [x, y] to start
  * @param pathTarget array of [x, y] to target
  * @param t 0..1
+ * @param out array to mutate
  * @returns 2d array
  */
-export const interpolatePath = (pathStart: Pts, pathTarget: Pts, t: number) => {
+export const interpolatePath = (
+  pathStart: Pts,
+  pathTarget: Pts,
+  t: number,
+  out?: Pts
+) => {
   if (pathStart.length === 0 || pathTarget.length === 0)
     throw new Error("interpolatePath(): path cannot be empty");
   if (pathStart.length !== pathTarget.length)
     throw new Error("interpolatePath(): length must be same");
-  return Array(pathStart.length)
-    .fill([])
-    .map((_, i) => {
-      return [
-        mix(pathStart[i][0], pathTarget[i][0], t),
-        mix(pathStart[i][1], pathTarget[i][1], t),
-      ];
-    });
+
+  out = out || new Array(pathStart.length).fill([]).map(() => []);
+  for (let i = 0; i < pathStart.length; i++) {
+    out[i][0] = mix(pathStart[i][0], pathTarget[i][0], t);
+    out[i][1] = mix(pathStart[i][1], pathTarget[i][1], t);
+  }
+  return out;
 };
 
 /**
  * interpolate object with {string:number}. ie. {x:10}.
  * both objects must have same keys.
+ *
+ * TODO: can i mutate object with out parameter?
+ *
  * @param objStart object to start from
  * @param objTarget object to interpolate to
  * @param t 0..1
@@ -254,15 +263,18 @@ export const interpolateObject = (
   objTarget: GenericObject,
   t: number
 ): GenericObject => {
-  const obj: GenericObject = {};
   if (Object.keys(objStart).length !== Object.keys(objTarget).length)
     throw new Error("interpolateObject(): objects must have same keys");
+
+  const out: GenericObject = {};
+
   for (const key in objStart) {
     if (!(key in objTarget))
       throw new Error("interpolateObject(): objects must have same keys");
-    obj[key] = mix(objStart[key], objTarget[key], t);
+
+    out[key] = mix(objStart[key], objTarget[key], t);
   }
-  return obj;
+  return out;
 };
 
 /**
@@ -272,17 +284,20 @@ export const interpolateObject = (
  * - currently, string or boolean uses start value. (should it be t=0.5?)
  * - review TS implementation
  * - every if condition is redundant to check start AND target
+ *
  * @param start
  * @param target
  * @param t
+ * @param out array to mutate (with 1d or 2d array)
  * @returns
  */
-export const interpolate = <T>(
-  // start: number | number[] | Pts | GenericObject,
-  // target: number | number[] | Pts | GenericObject,
-  start: T,
-  target: T,
-  t: number
+export const interpolate = (
+  start: number | Pt | Pts | GenericObject,
+  target: number | Pt | Pts | GenericObject,
+  // start: T,
+  // target: T,
+  t: number,
+  out?: number | Pt | Pts | GenericObject
 ) => {
   if (typeof start !== typeof target)
     throw new Error(
@@ -293,10 +308,11 @@ export const interpolate = <T>(
   } else if (Array.isArray(start) && Array.isArray(target)) {
     if (start[0].constructor === Array && target[0].constructor === Array) {
       // 2d array
-      return interpolatePath(start, target, t);
+      return interpolatePath(start as Pts, target as Pts, t, out as Pts);
     } else {
       // 1d array
-      return interpolateArray(start, target, t);
+      out = out || new Array(start.length);
+      return interpolateArray(start as Pt, target as Pt, t, out as Pt);
     }
     // } else if (start.constructor === Object) {
   } else if (
@@ -414,9 +430,9 @@ export const scalePath = (path: Pts, size: Pt): Pts => {
  * @param path
  * @returns {number[]} t values for each pt index
  */
-export const calcTByLength = (path: Pts): number[] => {
-  return [];
-};
+// export const calcTByLength = (path: Pts): number[] => {
+//   return [];
+// };
 
 /**
  * combine 2 paths by a single connecting point.
@@ -432,6 +448,6 @@ export const calcTByLength = (path: Pts): number[] => {
  * @param mode from which point to which point to connect?
  * @returns path a single combined path
  */
-export const combinePath = (path1: Pts, path2: Pts, mode: string) => {
-  return path1;
-};
+// export const combinePath = (path1: Pts, path2: Pts, mode: string) => {
+//   return path1;
+// };

@@ -327,6 +327,12 @@ describe("interpolate()", () => {
   test("returns 1d array", () => {
     expect(interpolate([10, 100], [30, 40], 0.5)).toStrictEqual([20, 70]);
   });
+  test("re-use 1d array", () => {
+    const start = [10, 100];
+    const end = [30, 40];
+    interpolate(start, end, 0.5, start);
+    expect(start).toStrictEqual([20, 70]);
+  });
   test("returns 2d array", () => {
     expect(
       interpolate(
@@ -345,12 +351,33 @@ describe("interpolate()", () => {
       [3, 6],
     ]);
   });
+  test("re-use 2d array", () => {
+    const a = [
+      [0, 100],
+      [200, 300],
+    ];
+    const b = [
+      [100, 200],
+      [500, 600],
+    ];
+    interpolate(a, b, 0.5, a);
+    expect(a).toStrictEqual([
+      [50, 150],
+      [350, 450],
+    ]);
+  });
   test("returns object", () => {
     expect(interpolate({ x: 3, y: 3 }, { x: 9, y: 9 }, 0.5)).toStrictEqual({
       x: 6,
       y: 6,
     });
   });
+  // test("re-use object", () => {
+  //   const a = { x: 0, y: 100 };
+  //   const b = { x: 100, y: 500 };
+  //   interpolate(a, b, 0.5, a);
+  //   expect(a).toStrictEqual({ x: 50, y: 300 });
+  // });
 });
 
 describe("extrudePath()", () => {
