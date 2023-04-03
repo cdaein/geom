@@ -13,6 +13,7 @@ import {
   interpolate,
   extrudePath,
   blendPath,
+  Pt,
 } from "./index";
 import type { Pts } from "./index";
 
@@ -179,13 +180,13 @@ describe("reflectPoint()", () => {
 describe("reflectPath()", () => {
 
   test("reflects on point", () => {
-    const pts = [[0, 0], [20, 50], [0, 100]];
-    const refl = [[100, 100], [80, 50], [100, 0]];
+    const pts: Pt[] = [[0, 0], [20, 50], [0, 100]];
+    const refl: Pts = [[100, 100], [80, 50], [100, 0]];
     expect(reflectPath(pts, [50, 50])).toEqual(refl);
   });
   test("reflects on line", () => {
-    const pts = [[0,0], [20,20], [40,40], [60,60]];
-    const refl = [[0, 100], [20, 80], [40, 60], [60, 40]];
+    const pts: Pt[] = [[0,0], [20,20], [40,40], [60,60]];
+    const refl: Pts = [[0, 100], [20, 80], [40, 60], [60, 40]];
     expect(reflectPath(pts, [[0, 50], [100, 50]])[0]).toEqual(refl[0]);
     expect(reflectPath(pts, [[0, 50], [100, 50]])[1]).toEqual(refl[1]);
     expect(reflectPath(pts, [[0, 50], [100, 50]])[2]).toEqual(refl[2]);
@@ -195,8 +196,8 @@ describe("reflectPath()", () => {
 
 // prettier-ignore
 describe("projectPointOnLine()", () => {
-  const pt = [10, 10];
-  const line = [[100, 0],[0, 100]];
+  const pt: Pt = [10, 10];
+  const line: Pts = [[100, 0],[0, 100]];
   test("can project a point on a point that uses origin (0,0)", () => {
     expect(projectPointOnLine([4, 7], [[8, 4],[0, 0]])[0]).toBeCloseTo(6);
     expect(projectPointOnLine([4, 7], [[8, 4],[0, 0]])[1]).toBeCloseTo(3);

@@ -14,7 +14,7 @@ import {
 // export type Pt = [number, number, number?]; // a single point [x, y, z?]
 // export type Pts = Pt[]; // path or array of points
 export type Pt = number[]; // a single point [x, y]
-export type Pts = number[][]; // path or array of points
+export type Pts = Pt[]; // path or array of points
 export type GenericObject = Record<string, any>;
 
 /**
@@ -46,8 +46,9 @@ export const blendPath = (
 
 /**
  * the resulting function is transformed to draw from center [0, 0]
+ *
  * @param pts must be a normalized array (0..1) of [x, y]s
- * @param anchor normalized center point [x, y]
+ * @param anchor normalized center point [x, y]. default: [0.5, 0.5]
  * @returns function to draw shape with given params (x,y,w,h)
  */
 export const createShapeFunc = (pts: Pts, anchor: Pt = [0.5, 0.5]) => {
@@ -60,7 +61,8 @@ export const createShapeFunc = (pts: Pts, anchor: Pt = [0.5, 0.5]) => {
 };
 
 /**
- * calculate distance between two point[]s
+ * calculate distance between two points
+ *
  * @param pt1
  * @param pt2
  * @returns
@@ -70,7 +72,8 @@ export const dist = (pt1: Pt, pt2: Pt): number => {
 };
 
 /**
- * squared distance (x^2 + y^2) between two point[]s
+ * squared distance (x^2 + y^2) between two points
+ *
  * @param pt1
  * @param pt2
  * @returns
@@ -87,7 +90,7 @@ export const distSq = (pt1: Pt, pt2: Pt): number => {
  * - add custom shapeFunc
  * @param path array of [ x, y ]
  * @param numPointsToExtrude how many points to use for extruding (mirroring). useful when extruding same path again.
- * @param offset [ x, y ] how much +/- in each dimension
+ * @param offset [ x, y ] how much +/- in each dimension. if number, will be converted to number[]
  * @param mode start (reverse direction) | end | both (closed path)
  * @param shapeFunc optional. function on how to extrude if other than straight line
  * @returns path
@@ -95,7 +98,7 @@ export const distSq = (pt1: Pt, pt2: Pt): number => {
 export const extrudePath = (
   path: Pts,
   numPointsToExtrude: number,
-  offset: Pt,
+  offset: Pt | number,
   mode: "start" | "end" | "both" = "end"
   // shapeFunc?: () => Pts
 ) => {
@@ -103,6 +106,10 @@ export const extrudePath = (
     throw new Error(
       "extrudePath(): numPointsToExtrude can't exceed length of path"
     );
+  }
+
+  if (typeof offset === "number") {
+    offset = [offset, offset];
   }
 
   const clone = [...path];
@@ -239,7 +246,7 @@ export const interpolatePath = (
   if (pathStart.length !== pathTarget.length)
     throw new Error("interpolatePath(): length must be same");
 
-  out = out || new Array(pathStart.length).fill([]).map(() => []);
+  out = out || new Array(pathStart.length).fill([]).map(() => [0, 0]);
   for (let i = 0; i < pathStart.length; i++) {
     out[i][0] = mix(pathStart[i][0], pathTarget[i][0], t);
     out[i][1] = mix(pathStart[i][1], pathTarget[i][1], t);
@@ -403,22 +410,23 @@ export const rotatePoint = (
 /**
  * scale a single point
  * @param pt a point [x, y]
- * @param size [width, height] to scale to
+ * @param size [width, height] to scale to. if number, it is converted to number[]
  * @returns scaled point [x, y]`
  */
-export const scalePoint = (pt: Pt, size: Pt): Pt => {
+export const scalePoint = (pt: Pt, size: Pt | number): Pt => {
   const [x, y] = pt;
-  const [w, h] = size;
+  const [w, h] = typeof size === "number" ? [size, size] : size;
   return [x * w, y * h];
 };
 
 /**
  * take normalized path data and return [ x, y ] scaled to width and height
  * @param path array of [x, y] normalized point pairs
- * @param size [width, height] to scale to
+ * @param size [width, height] to scale to. if number, it is scaled to number[]
  * @returns new array of [x, y]
  */
-export const scalePath = (path: Pts, size: Pt): Pts => {
+export const scalePath = (path: Pts, size: Pt | number): Pts => {
+  size = typeof size === "number" ? [size, size] : size;
   return path.map((pt) => scalePoint(pt, size));
 };
 
