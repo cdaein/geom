@@ -52,6 +52,10 @@ describe("getPathLength()", () => {
 });
 
 describe("scalePoint", () => {
+  test("handle size argument as a single number", () => {
+    expect(scalePoint(pts[0], 1)).toStrictEqual(pts[0]);
+    expect(scalePoint(pts[1], 2)).toStrictEqual([pts[1][0] * 2, pts[1][1] * 2]);
+  });
   test("not normalized: scale at 1 (same as original)", () => {
     expect(scalePoint(pts[0], [1, 1])).toStrictEqual(pts[0]);
     expect(scalePoint(pts[1], [1, 1])).toStrictEqual(pts[1]);
@@ -99,6 +103,12 @@ describe("scalePoint", () => {
 });
 
 describe("scalePath()", () => {
+  test("handle size argument as a single number", () => {
+    expect(scalePath(pts, 1)).toStrictEqual(pts);
+    expect(scalePath([pts[1]], 2)).toStrictEqual([
+      [pts[1][0] * 2, pts[1][1] * 2],
+    ]);
+  });
   test("not normalized: scale at 1 (same as original)", () => {
     expect(scalePath(pts, [1, 1])).toStrictEqual(pts);
   });
