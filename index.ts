@@ -305,7 +305,7 @@ export const interpolate = (
   // target: T,
   t: number,
   out?: number | Pt | Pts | GenericObject
-) => {
+): number | Pt | Pts | GenericObject => {
   if (typeof start !== typeof target)
     throw new Error(
       "interpolate(): both start and target args must be of same type"
