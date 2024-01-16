@@ -22,14 +22,14 @@
   "dependencies": {
     "@daeinc/array": "^0.6.1",
     "@daeinc/math": "^0.6.0",
-    "@thi.ng/vectors": "^7.6.3"
+    "@thi.ng/vectors": "^7.8.15"
   },
   "devDependencies": {
-    "@daeinc/canvas": "^0.13.0",
+    "@daeinc/canvas": "^0.14.5",
     "@daeinc/draw": "^0.4.0",
-    "tsup": "^6.6.3",
-    "typescript": "^4.9.5",
-    "vitest": "^0.28.5"
+    "tsup": "^8.0.1",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.0"
   },
   "publishConfig": {
     "access": "public",
