@@ -1,21 +1,22 @@
 // import { describe, expect, test } from "@jest/globals";
 import { describe, expect, test } from "vitest";
-import {
-  scalePoint,
-  scalePath,
-  reflectPoint,
-  reflectPath,
-  projectPointOnLine,
-  getPathLength,
-  createShapeFunc,
-  interpolatePath,
-  interpolateObject,
-  interpolate,
-  extrudePath,
-  blendPath,
-  Pt,
-} from "./index";
 import type { Pts } from "./index";
+import {
+  blendPath,
+  createShapeFunc,
+  extrudePath,
+  getPathLength,
+  interpolate,
+  interpolateObject,
+  interpolatePath,
+  // polar, // TODO: add tests
+  projectPointOnLine,
+  Pt,
+  reflectPath,
+  reflectPoint,
+  scalePath,
+  scalePoint,
+} from "./index";
 
 const pts: Pts = [
   [0, 0], // t=0
@@ -88,7 +89,7 @@ describe("scalePoint", () => {
     // prettier-ignore
     expect(scalePoint(normPts[0], [2, 2])).toStrictEqual([ normPts[0][0] * 2, normPts[0][1] * 2 ]);
     expect(scalePoint(normPts[1] /* [0.5, 0.0] */, [3.21, 1])[0]).toBeCloseTo(
-      1.605
+      1.605,
     );
     // prettier-ignore
     expect(scalePoint(normPts[2], [10.73, 9.003])).toStrictEqual([ normPts[2][0] * 10.73, normPts[2][1] * 9.003 ]);
@@ -97,7 +98,7 @@ describe("scalePoint", () => {
     // prettier-ignore
     expect(scalePoint(normPts[0], [0.35, 0.35])).toStrictEqual([ normPts[0][0] * 0.35, normPts[0][1] * 0.35 ]);
     expect(scalePoint(normPts[1] /* [0.5, 0.0] */, [0.25, 1])[0]).toBeCloseTo(
-      0.125
+      0.125,
     );
   });
 });
@@ -144,7 +145,7 @@ describe("scalePath()", () => {
       1.1, 0,
     ]);
     expect(
-      scalePath([normPts[2]] /* [[.5, 1]] */, [3.2142, 0])[0]
+      scalePath([normPts[2]] /* [[.5, 1]] */, [3.2142, 0])[0],
     ).toStrictEqual([1.6071, 0]);
   });
   test("normalized: scale down", () => {
@@ -155,7 +156,7 @@ describe("scalePath()", () => {
       0.1, 0,
     ]);
     expect(scalePath([normPts[2]] /* [[.5, 1]] */, [0.43, 0])[0]).toStrictEqual(
-      [0.215, 0]
+      [0.215, 0],
     );
   });
 });
@@ -271,10 +272,10 @@ describe("interpolatePath()", () => {
   });
   test("throws error when paths don't have same length", () => {
     expect(() => interpolatePath(pts, pts.slice(1, 3), 0.0)).toThrow(
-      "length must be same"
+      "length must be same",
     );
     expect(() => interpolatePath(pts.slice(0, 3), pts, 0.0)).toThrow(
-      "length must be same"
+      "length must be same",
     );
   });
   test("returns pathStart at t=0", () => {
@@ -301,16 +302,16 @@ describe("interpolateObject()", () => {
 
   test("throws error when keys don't match", () => {
     expect(() => interpolateObject(obj1, obj3, 0.5)).toThrow(
-      "objects must have same keys"
+      "objects must have same keys",
     );
     expect(() => interpolateObject(obj3, obj1, 0.5)).toThrow(
-      "objects must have same keys"
+      "objects must have same keys",
     );
     expect(() => interpolateObject(obj1, obj4, 0.5)).toThrow(
-      "objects must have same keys"
+      "objects must have same keys",
     );
     expect(() => interpolateObject(obj4, obj1, 0.5)).toThrow(
-      "objects must have same keys"
+      "objects must have same keys",
     );
   });
   test("returns objStart at t=0", () => {
@@ -355,8 +356,8 @@ describe("interpolate()", () => {
           [30, 40],
           [4, 8],
         ],
-        0.5
-      )
+        0.5,
+      ),
     ).toStrictEqual([
       [20, 70],
       [3, 6],
@@ -401,7 +402,7 @@ describe("extrudePath()", () => {
 
   test("throws error if numPointsToExtrude is greater than path length", () => {
     expect(() => extrudePath(pts, 5, [10, 0])).toThrow(
-      "numPointsToExtrude can't exceed length of path"
+      "numPointsToExtrude can't exceed length of path",
     );
   });
   test("extrudes 1 point in different modes", () => {

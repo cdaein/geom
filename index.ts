@@ -33,7 +33,7 @@ export type GenericObject = Record<string, any>;
 export const blendPath = (
   path1: Pts,
   path2: Pts,
-  numBlends: number
+  numBlends: number,
   // guidePath?: Pts
 ) => {
   return Array(numBlends)
@@ -99,12 +99,12 @@ export const extrudePath = (
   path: Pts,
   numPointsToExtrude: number,
   offset: Pt | number,
-  mode: "start" | "end" | "both" = "end"
+  mode: "start" | "end" | "both" = "end",
   // shapeFunc?: () => Pts
 ) => {
   if (numPointsToExtrude > path.length) {
     throw new Error(
-      "extrudePath(): numPointsToExtrude can't exceed length of path"
+      "extrudePath(): numPointsToExtrude can't exceed length of path",
     );
   }
 
@@ -193,7 +193,7 @@ export const getPathLength = (path: Pts): number => {
       totalLen +
       Math.sqrt(
         Math.pow(arr[i + 1][0] - arr[i][0], 2) +
-          Math.pow(arr[i + 1][1] - arr[i][1], 2)
+          Math.pow(arr[i + 1][1] - arr[i][1], 2),
       )
     );
   }, 0);
@@ -239,7 +239,7 @@ export const interpolatePath = (
   pathStart: Pts,
   pathTarget: Pts,
   t: number,
-  out?: Pts
+  out?: Pts,
 ) => {
   if (pathStart.length === 0 || pathTarget.length === 0)
     throw new Error("interpolatePath(): path cannot be empty");
@@ -268,7 +268,7 @@ export const interpolatePath = (
 export const interpolateObject = (
   objStart: GenericObject,
   objTarget: GenericObject,
-  t: number
+  t: number,
 ): GenericObject => {
   if (Object.keys(objStart).length !== Object.keys(objTarget).length)
     throw new Error("interpolateObject(): objects must have same keys");
@@ -304,11 +304,11 @@ export const interpolate = (
   // start: T,
   // target: T,
   t: number,
-  out?: number | Pt | Pts | GenericObject
+  out?: number | Pt | Pts | GenericObject,
 ): number | Pt | Pts | GenericObject => {
   if (typeof start !== typeof target)
     throw new Error(
-      "interpolate(): both start and target args must be of same type"
+      "interpolate(): both start and target args must be of same type",
     );
   if (typeof start === "number" && typeof target === "number") {
     return mix(start, target, t);
@@ -335,6 +335,19 @@ export const interpolate = (
     return start;
   }
 };
+
+/**
+ * Computes the polar coordinate from radius and angle (and optional offset).
+ *
+ * @param r - radius
+ * @param theta - angle
+ * @param offset - `[x, y]`. The default is `[0, 0]`
+ * @returns `[x, y]` coordinate
+ */
+export const polar = (r: number, theta: number, offset: Pt = [0, 0]): Pt => [
+  r * Math.cos(theta) + offset[0],
+  r * Math.sin(theta) + offset[1],
+];
 
 /**
  * project a point on a line using vector.
@@ -365,7 +378,7 @@ export const projectPointOnLine = (pt: Pt, line: Pts): Pt => {
 export const reflectPoint = (pt: Pt, axis: Pt | Pts): Pt => {
   if (axis[0].constructor === Array) {
     const projVec = vec2(
-      ...(projectPointOnLine(pt, axis as Pts) as [number, number])
+      ...(projectPointOnLine(pt, axis as Pts) as [number, number]),
     );
     const distVec = sub([], vec2(pt[0], pt[1]), projVec);
     const reflVec = sub(projVec, projVec, distVec);
@@ -400,7 +413,7 @@ export const rotatePoint = (
   pt: Pt,
   angle: number,
   anchor = [0, 0],
-  precision = 5
+  precision = 5,
 ) => {
   const x = anchor[0] + Math.cos(angle) * pt[0];
   const y = anchor[1] + Math.sin(angle) * pt[1];
