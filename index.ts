@@ -286,6 +286,8 @@ export const interpolateObject = (
   return out;
 };
 
+type InterpolateArg = number | Pt | Pts | GenericObject;
+
 /**
  * Interpolate number, number[], number[][] or generic object
  *
@@ -300,28 +302,32 @@ export const interpolateObject = (
  * @param out array to mutate (with 1d or 2d array)
  * @returns
  */
-export const interpolate = (
-  start: number | Pt | Pts | GenericObject,
-  target: number | Pt | Pts | GenericObject,
-  // start: T,
-  // target: T,
+// export const interpolate = (
+//   start: number | Pt | Pts | GenericObject,
+//   target: number | Pt | Pts | GenericObject,
+//   t: number,
+//   out?: number | Pt | Pts | GenericObject,
+// ): number | Pt | Pts | GenericObject => {
+export const interpolate = <T extends InterpolateArg>(
+  start: T,
+  target: T,
   t: number,
-  out?: number | Pt | Pts | GenericObject,
-): number | Pt | Pts | GenericObject => {
+  out?: T,
+): T => {
   if (typeof start !== typeof target)
     throw new Error(
       "interpolate(): start and target args must be of same type",
     );
   if (typeof start === "number" && typeof target === "number") {
-    return mix(start, target, t);
+    return mix(start, target, t) as T;
   } else if (Array.isArray(start) && Array.isArray(target)) {
     if (start[0].constructor === Array && target[0].constructor === Array) {
       // 2d array
-      return interpolatePath(start as Pts, target as Pts, t, out as Pts);
+      return interpolatePath(start as Pts, target as Pts, t, out as Pts) as T;
     } else {
       // 1d array
-      out = out || new Array(start.length);
-      return interpolateArray(start as Pt, target as Pt, t, out as Pt);
+      out = out || (new Array(start.length) as T);
+      return interpolateArray(start as Pt, target as Pt, t, out as Pt) as T;
     }
     // } else if (start.constructor === Object) {
   } else if (
@@ -331,7 +337,7 @@ export const interpolate = (
     target !== null
   ) {
     // object
-    return interpolateObject(start, target, t);
+    return interpolateObject(start, target, t) as T;
   } else {
     // string or boolean
     return start;

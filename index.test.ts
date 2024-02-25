@@ -334,7 +334,8 @@ describe("interpolate()", () => {
   //   );
   // });
   test("returns number", () => {
-    expect(interpolate(10, 30, 0.5)).toBe(20);
+    // FIX: type inference is not perfect. it infers number "value", not number "type"
+    expect(interpolate<number>(10, 30, 0.5)).toBe(20);
   });
   test("returns 1d array", () => {
     expect(interpolate([10, 100], [30, 40], 0.5)).toStrictEqual([20, 70]);
