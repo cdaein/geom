@@ -18,17 +18,18 @@ export type Pts = Pt[]; // path or array of points
 export type GenericObject = Record<string, any>;
 
 /**
- * generates an array of paths (excl. original 2 paths)
+ * Generates an array of paths (excl. original 2 paths).
  *
  * TODO:
  * - guidePath: input another path to use as shaping path.
  *   this path should already be resampled so that path points can be used as numBlends,
  *   or use numBlends param to resample within this function.
- * @param path1 array of [x, y] to blend from
- * @param path2 array of [x, y] to blend to
+ *
+ * @param path1 array of `[x, y]` to blend from
+ * @param path2 array of `[x, y]` to blend to
  * @param numBlends how many blended paths to generate (excl. two original paths)
  * @param guidePath optional. custom path that blended paths will follow along.
- * @returns 3d array of paths [number of blends][each blended path][x, y]
+ * @returns 3d array of paths `[number of blends][each blended path][x, y]`
  */
 export const blendPath = (
   path1: Pts,
@@ -45,11 +46,11 @@ export const blendPath = (
 };
 
 /**
- * the resulting function is transformed to draw from center [0, 0]
+ * The resulting function is transformed to draw from center `[0, 0]`.
  *
- * @param pts must be a normalized array (0..1) of [x, y]s
- * @param anchor normalized center point [x, y]. default: [0.5, 0.5]
- * @returns function to draw shape with given params (x,y,w,h)
+ * @param pts must be a normalized array (0..1) of `[x, y]`s
+ * @param anchor normalized center point `[x, y]`. default: `[0.5, 0.5]`
+ * @returns function to draw shape with given params `(x, y, w, h)`
  */
 export const createShapeFunc = (pts: Pts, anchor: Pt = [0.5, 0.5]) => {
   return (x: number, y: number, w: number, h: number): Pts =>
@@ -61,7 +62,7 @@ export const createShapeFunc = (pts: Pts, anchor: Pt = [0.5, 0.5]) => {
 };
 
 /**
- * calculate distance between two points
+ * Calculate distance between two points.
  *
  * @param pt1
  * @param pt2
@@ -72,7 +73,7 @@ export const dist = (pt1: Pt, pt2: Pt): number => {
 };
 
 /**
- * squared distance (x^2 + y^2) between two points
+ * Squared distance `x^2 + y^2` between two points
  *
  * @param pt1
  * @param pt2
@@ -83,15 +84,16 @@ export const distSq = (pt1: Pt, pt2: Pt): number => {
 };
 
 /**
- * extrude path in 2d space
+ * Extrude path in 2d space.
  *
  * TODO:
  * - instead of preventing numPoints<path length, continue to extrude. use modulo.
  * - add custom shapeFunc
- * @param path array of [ x, y ]
+ *
+ * @param path array of `[ x, y ]`
  * @param numPointsToExtrude how many points to use for extruding (mirroring). useful when extruding same path again.
- * @param offset [ x, y ] how much +/- in each dimension. if number, will be converted to number[]
- * @param mode start (reverse direction) | end | both (closed path)
+ * @param offset `[ x, y ]` how much +/- in each dimension. if number, will be converted to number[]
+ * @param mode "start" (reverse direction) | "end" | "both" (closed path)
  * @param shapeFunc optional. function on how to extrude if other than straight line
  * @returns path
  */
@@ -139,7 +141,7 @@ export const extrudePath = (
 };
 
 /**
- * generate extra points for smooth hard corners of path
+ * Generate extra points for smooth hard corners of path.
  *
  * TODO: test
  *
@@ -164,25 +166,25 @@ export const generateSmoothPath = (pts: Pts, smoothFactor: number) => {
 };
 
 /**
- * atan2() gives angle between [-PI, PI]
+ * `atan2()` gives angle between `[-PI, PI]`.
  *
  * REVIEW: order or points matter, so what's the best way?
  *
  * @param pt1
  * @param pt2
- * @returns angle between [-PI, PI]
+ * @returns angle between `[-PI, PI]`
  */
 export const getAngleBetween = (pt1: Pt, pt2: Pt) => {
   return Math.atan2(pt2[1] - pt1[1], pt2[0] - pt1[0]);
 };
 
 /**
- * take an array of points and return total length of path
+ * Take an array of points and return total length of path.
  *
  * REVIEW:
  * - which is better, this or using getSegmentLengths()?
  *
- * @param path array of [ x, y ] points
+ * @param path array of `[ x, y ]` points
  * @returns total length of path
  */
 export const getPathLength = (path: Pts): number => {
@@ -200,7 +202,7 @@ export const getPathLength = (path: Pts): number => {
 };
 
 /**
- * converts angle [-pi, pi] to [0, 2pi)
+ * Converts angle `[-pi, pi]` to `[0, 2pi)`
  * @param pt1
  * @param pt2
  * @returns angle between [0, TWO_PI]
@@ -211,7 +213,7 @@ export const getPositiveAngleBetween = (pt1: Pt, pt2: Pt) => {
 };
 
 /**
- * calculate each segment length(distance)
+ * Calculate each segment length(distance).
  * @param pts array of points [ x, y ]
  * @returns array of segment lengths
  */
@@ -227,10 +229,10 @@ export const getSegmentLengths = (pts: Pts) => {
 export const interpolateArray = importedInterpolateArray; // REVIEW: hmm...
 
 /**
- * mix/lerp 2d number array. usually used for path data of [x, y]
+ * Mix/lerp 2d number array. usually used for path data of `[x, y]`
  *
- * @param pathStart array of [x, y] to start
- * @param pathTarget array of [x, y] to target
+ * @param pathStart array of `[x, y]` to start
+ * @param pathTarget array of `[x, y]` to target
  * @param t 0..1
  * @param out array to mutate
  * @returns 2d array
@@ -255,7 +257,7 @@ export const interpolatePath = (
 };
 
 /**
- * interpolate object with {string:number}. ie. {x:10}.
+ * interpolate object with `{string: number}`. ie. `{ x: 10 }`.
  * both objects must have same keys.
  *
  * TODO: can i mutate object with out parameter?
@@ -285,7 +287,7 @@ export const interpolateObject = (
 };
 
 /**
- * interpolate number, number[], number[][] or generic object
+ * Interpolate number, number[], number[][] or generic object
  *
  * TODO:
  * - currently, string or boolean uses start value. (should it be t=0.5?)
@@ -308,7 +310,7 @@ export const interpolate = (
 ): number | Pt | Pts | GenericObject => {
   if (typeof start !== typeof target)
     throw new Error(
-      "interpolate(): both start and target args must be of same type",
+      "interpolate(): start and target args must be of same type",
     );
   if (typeof start === "number" && typeof target === "number") {
     return mix(start, target, t);
