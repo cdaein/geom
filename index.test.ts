@@ -1,6 +1,6 @@
 // import { describe, expect, test } from "@jest/globals";
 import { describe, expect, test } from "vitest";
-import type { Pts } from "./index";
+import type { Pts } from "./src/index";
 import {
   blendPath,
   createShapeFunc,
@@ -16,7 +16,7 @@ import {
   reflectPoint,
   scalePath,
   scalePoint,
-} from "./index";
+} from "./src/index";
 
 const pts: Pts = [
   [0, 0], // t=0
@@ -335,7 +335,7 @@ describe("interpolate()", () => {
   // });
   test("returns number", () => {
     // FIX: type inference is not perfect. it infers number "value", not number "type"
-    expect(interpolate<number>(10, 30, 0.5)).toBe(20);
+    expect(interpolate(10000, 30, 0.5)).toBe(20);
   });
   test("returns 1d array", () => {
     expect(interpolate([10, 100], [30, 40], 0.5)).toStrictEqual([20, 70]);

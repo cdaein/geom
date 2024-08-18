@@ -286,7 +286,7 @@ export const interpolateObject = (
   return out;
 };
 
-type InterpolateArg = number | Pt | Pts | GenericObject;
+// type InterpolateArg = number | Pt | Pts | GenericObject;
 
 /**
  * Interpolate number, number[], number[][] or generic object
@@ -308,16 +308,10 @@ type InterpolateArg = number | Pt | Pts | GenericObject;
 //   t: number,
 //   out?: number | Pt | Pts | GenericObject,
 // ): number | Pt | Pts | GenericObject => {
-export const interpolate = <T extends InterpolateArg>(
-  start: T,
-  target: T,
-  t: number,
-  out?: T,
-): T => {
+// FIX: issue when T is number
+export function interpolate<T>(start: T, target: T, t: number, out?: T): T {
   if (typeof start !== typeof target)
-    throw new Error(
-      "interpolate(): start and target args must be of same type",
-    );
+    throw new Error("interpolate(): start and target must be of same type");
   if (typeof start === "number" && typeof target === "number") {
     return mix(start, target, t) as T;
   } else if (Array.isArray(start) && Array.isArray(target)) {
@@ -342,7 +336,7 @@ export const interpolate = <T extends InterpolateArg>(
     // string or boolean
     return start;
   }
-};
+}
 
 /**
  * Computes the polar coordinate from radius and angle (and optional offset).
