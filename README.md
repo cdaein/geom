@@ -14,6 +14,12 @@ then,
 import { blendPath, ... } from "@daeinc/geom";
 ```
 
+## CDN
+
+```js
+import { blendPath, ... } from "https://cdn.jsdelivr.net/npm/@daeinc/geom/dist/geom.esm.js"
+```
+
 ## Types
 
 ```ts
@@ -33,7 +39,7 @@ const blendPath: (
   path1: Pts,
   path2: Pts,
   numBlends: number,
-  guidePath?: Pts
+  guidePath?: Pts,
 ) => number[][][];
 ```
 
@@ -44,7 +50,7 @@ Interpolates two paths to create in-between paths. `numBlends` does not count th
 ```ts
 const createShapeFunc: (
   pts: Pts,
-  anchor?: Pt
+  anchor?: Pt,
 ) => (x: number, y: number, w: number, h: number) => Pts;
 ```
 
@@ -72,7 +78,7 @@ const extrudePath: (
   numPointsToExtrude: number,
   offset: Pt,
   mode?: "start" | "end" | "both",
-  shapeFunc?: () => Pts
+  shapeFunc?: () => Pts,
 ) => number[][];
 ```
 
@@ -124,7 +130,7 @@ Returns an array with each segment length (distance between points).
 const interpolateArray: (
   arrStart: number[],
   arrTarget: number[],
-  t: number
+  t: number,
 ) => number[];
 ```
 
@@ -134,7 +140,7 @@ const interpolateArray: (
 const interpolatePath: (
   pathStart: Pts,
   pathTarget: Pts,
-  t: number
+  t: number,
 ) => number[][];
 ```
 
@@ -146,7 +152,7 @@ Interpolates between two number arrays. Usually used for path data of `[x, y]`.
 const interpolateObject: (
   objStart: GenericObject,
   objTarget: GenericObject,
-  t: number
+  t: number,
 ) => GenericObject;
 ```
 
@@ -158,7 +164,7 @@ Interpolates between two objects formatted `{ string: number }`. For example, `{
 const interpolate: <T>(
   start: T,
   target: T,
-  t: number
+  t: number,
 ) => number | GenericObject | T;
 ```
 
