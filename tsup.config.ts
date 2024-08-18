@@ -33,7 +33,7 @@ export default defineConfig([
     format: "esm",
     target: "esnext",
     dts: true,
-    sourcemap: true,
+    // sourcemap: true,
     clean: true,
     treeshake: true,
   },
