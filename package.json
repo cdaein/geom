@@ -21,16 +21,16 @@
   "license": "MIT",
   "dependencies": {
     "@daeinc/array": "^0.6.1",
-    "@daeinc/math": "^0.6.1",
-    "@thi.ng/vectors": "^7.10.11"
+    "@daeinc/math": "^0.8.0",
+    "@thi.ng/vectors": "^8.3.1"
   },
   "devDependencies": {
-    "@daeinc/canvas": "^0.15.0",
-    "@daeinc/draw": "^0.5.0",
+    "@daeinc/canvas": "^0.16.3",
+    "@daeinc/draw": "^0.6.1",
     "esbuild-plugin-license": "^1.2.3",
-    "tsup": "^8.0.2",
-    "typescript": "^5.3.3",
-    "vitest": "^1.3.1"
+    "tsup": "^8.5.0",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
   },
   "publishConfig": {
     "access": "public",
