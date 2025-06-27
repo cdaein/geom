@@ -15,7 +15,8 @@
     "watch": "tsc --watch",
     "test": "vitest",
     "demo": "parcel ./demo/index.html --dist-dir ./demo/build --no-source-maps --no-cache",
-    "build": "tsc --noemit && tsup"
+    "build": "tsc --noemit && tsup",
+    "prepublishOnly": "npm run build"
   },
   "author": "Daeinc",
   "license": "MIT",
